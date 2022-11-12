@@ -1,5 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+//import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+//import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+//import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+//import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { Obstacle }  from  './obstacle.js'
 const Common = require("./lib/common.js")
@@ -59,10 +65,8 @@ function init() {
 
   const bookWidth   = 10
   const bookHeight  = 10
-
   const fnames = ["img/tomato_0.png", "img/tomato_1.png"]
-  obstacle = new Obstacle(fnames, bookWidth, bookHeight)
-  scene.add( ...(obstacle.meshes) ) 
+  obstacle = new Obstacle(fnames, bookWidth, bookHeight, scene)
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -144,7 +148,9 @@ document.body.addEventListener("keydown", function(e) {
       obstacle.startCuttOff()
       break
 
-    case e.key == 'C':
+    case e.key == 'r':
+      obstacle.reset()
+      break
       break
 
     case e.key == '0':
