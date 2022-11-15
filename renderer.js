@@ -65,8 +65,8 @@ function init() {
 
   const bookWidth   = 10
   const bookHeight  = 10
-  const fnames = ["img/tomato_0.png", "img/tomato_1.png"]
-  obstacle = new Obstacle(fnames, bookWidth, bookHeight, scene)
+  const fnames = ["img/tomato_0.png", "img/tomato_1.png", "img/tomato_2.png"]
+  obstacle = new Obstacle(fnames, bookWidth, bookHeight, camera, scene)
 
   window.addEventListener( 'resize', onWindowResize )
 

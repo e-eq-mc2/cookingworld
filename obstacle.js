@@ -9,11 +9,11 @@ const Colormap = require("./lib/colormap.js")
 const TO_RADIANS = Math.PI/180.0
 
 export class Obstacle {
-  constructor(fnames, width, height, scene) {
+  constructor(fnames, width, height, camera, scene) {
     const geometry = this.plateGeometry(width, height, 1, 1)
 
     const meshes = [] 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       const fname = fnames[i]
       const material = this.plateMaterial(fname)
       const mesh = new THREE.Mesh(geometry, material)
@@ -22,14 +22,18 @@ export class Obstacle {
 
 
     this.beforeMesh = meshes[0]
-    this.afterMesh  = meshes[1]
+    this.haloMesh   = meshes[1]
+    this.afterMesh  = meshes[2]
 
     this.beforePivot = new THREE.Group()
     this.beforePivot.add( this.beforeMesh )
+    this.beforePivot.add( this.haloMesh )
 
 		this.beforeMesh.translateY(height / 2)
-		this.afterMesh.translateY(height / 2)
-    this.afterMesh.translateZ(-1)
+		this.haloMesh  .translateY(height / 2)
+		this.afterMesh .translateY(height / 2)
+    this.haloMesh  .translateZ(-0.1)
+    this.afterMesh .translateZ(-0.2)
 
     scene.add( this.beforePivot )
     scene.add( this.afterMesh   )
@@ -37,47 +41,91 @@ export class Obstacle {
 		this.beforeMStartPos = this.beforeMesh.position.clone()
 		this.beforeMStartRot = this.beforeMesh.rotation.clone()
 
+    this.haloMStartPos  = this.haloMesh.position.clone()
+    this.haloMStartRot  = this.haloMesh.rotation.clone()
+
 		this.beforePStartPos = this.beforePivot.position.clone()
 		this.beforePStartRot = this.beforePivot.rotation.clone()
+
+    this.haloMesh.material.opacity = 0
+
+    this.waitTime   = 0 
+    this.waitPeriod = 2
 
     this.cuttingTime = 0
 		this.cuttingPeriod = 5
 
     this.fallingTime = 0
     this.isCut = false
-  }
+
+    // create an AudioListener and add it to the camera
+    const listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    // create a global audio source
+    const sound = new THREE.Audio( listener );
+
+    // load a sound and set it as the Audio object's buffer
+    const audioLoader = new THREE.AudioLoader();
+
+    audioLoader.load( 'sound/cut.mp3', function( buffer ) {
+      sound.setBuffer( buffer );
+      //sound.setLoop( true );
+      sound.playbackRate = 0.7
+      sound.setVolume( 1.0 );
+    });
 
 
-  startCuttOff() {
-    this.cuttingTime = 0
-    this.fallingTime = 0
-    this.isCut = true
-  }
-
-  update(dt) {
-    if ( ! this.isCut ) return
-    this.cuttingTime += dt
-
-		if ( this.cuttingTime < this.cuttingPeriod ) {
-			this.update0(dt)
-		} else {
-			this.fallingTime += dt
-			this.update1(dt)
-		}
-
+    this.sound =  sound
   }
 
 	reset() {
 	  this.isCut = false
+    this.waitTime = 0
 		this.cuttingTime = 0
 		this.fallingTime = 0
 
 		this.beforeMesh .position.copy(this.beforeMStartPos)
+    this.haloMesh   .position.copy(this.haloMStartPos  )
 		this.beforePivot.position.copy(this.beforePStartPos)
 
 		this.beforeMesh .rotation.copy(this.beforeMStartRot)
+    this.haloMesh   .rotation.copy(this.haloMStartRot  )
 		this.beforePivot.rotation.copy(this.beforePStartRot)
+
+    this.haloMesh.material.opacity = 0
 	}
+
+  startCuttOff() {
+    this.waitTime = 0
+    this.cuttingTime = 0
+    this.fallingTime = 0
+    this.isCut = true
+
+    this.sound.play();
+
+    this.haloMesh.material.opacity = 1
+  }
+
+  update(dt) {
+    if ( ! this.isCut ) return
+
+
+    if ( this.waitTime < this.waitPeriod  )  {
+      this.waitTime += dt
+      return 
+    }
+
+		if ( this.cuttingTime < this.cuttingPeriod ) {
+      this.cuttingTime += dt
+			this.update0(dt)
+      return
+		} 
+
+    this.fallingTime += dt
+    this.update1(dt)
+
+  }
 
 	update0(dt) {
     const rot = this.beforePivot.rotation
@@ -127,8 +175,8 @@ export class Obstacle {
       map:         tex, 
       side:        THREE.FrontSide,
       depthWrite:  true,
-      //transparent: true,
-      alphaTest:   0.5
+      transparent: true, //opacity: 0.5,
+      //alphaTest:   0.5
     });
 
     return mat
