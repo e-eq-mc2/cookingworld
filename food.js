@@ -8,46 +8,45 @@ const Colormap = require("./lib/colormap.js")
 // Particle3D class
 const TO_RADIANS = Math.PI/180.0
 
-export class Obstacle {
-  constructor(fnames, width, height, camera, scene) {
-    const geometry = this.plateGeometry(width, height, 1, 1)
+export class Food {
+  const 
+  constructor(fnames, width, height, scene) {
 
-    const meshes = [] 
+    this.BEFORE_0 = 0
+    this.BEFORE_1 = 1
+    this.AFTER    = 2
+    this.BEFORE   = 3
+
+    this.meshes = [] 
+    const geometry = this.plateGeometry(width, height, 1, 1)
     for (let i = 0; i < 3; i++) {
       const fname = fnames[i]
       const material = this.plateMaterial(fname)
+
       const mesh = new THREE.Mesh(geometry, material)
-      meshes.push( mesh ) 
+      this.meshes.push( mesh ) 
+      mesh.translateY(height / 2.0)
+      mesh.translateZ( i * -0.1   )
     }
 
+    const b = new THREE.Group()
+    b.add( this.meshes[this.BEFORE_0] ) 
+    b.add( this.meshes[this.BEFORE_1] )
+    this.meshes.push( b  )
 
-    this.beforeMesh = meshes[0]
-    this.haloMesh   = meshes[1]
-    this.afterMesh  = meshes[2]
 
-    this.beforePivot = new THREE.Group()
-    this.beforePivot.add( this.beforeMesh )
-    this.beforePivot.add( this.haloMesh )
+    scene.add( this.meshes[this.BEFORE] )
+    scene.add( this.meshes[this.AFTER ] )
 
-		this.beforeMesh.translateY(height / 2)
-		this.haloMesh  .translateY(height / 2)
-		this.afterMesh .translateY(height / 2)
-    this.haloMesh  .translateZ(-0.1)
-    this.afterMesh .translateZ(-0.2)
+    this.startPos = [] 
+    this.startRot = [] 
+    for (let i = 0; i < 4; i++) {
+      const m = this.meshes[i]
+      this.startPos.push( m.position.clone() )
+      this.startRot.push( m.rotation.clone() )
+    }
 
-    scene.add( this.beforePivot )
-    scene.add( this.afterMesh   )
-
-		this.beforeMStartPos = this.beforeMesh.position.clone()
-		this.beforeMStartRot = this.beforeMesh.rotation.clone()
-
-    this.haloMStartPos  = this.haloMesh.position.clone()
-    this.haloMStartRot  = this.haloMesh.rotation.clone()
-
-		this.beforePStartPos = this.beforePivot.position.clone()
-		this.beforePStartRot = this.beforePivot.rotation.clone()
-
-    this.haloMesh.material.opacity = 0
+    this.meshes[this.BEFORE_1].opacity = 0
 
     this.waitTime   = 0 
     this.waitPeriod = 2
@@ -57,6 +56,14 @@ export class Obstacle {
 
     this.fallingTime = 0
     this.isCut = false
+
+    this.setupSound(scene)
+
+
+  }
+
+  setupSound(scene) {
+    const camera = this.getCamera(scene)
 
     // create an AudioListener and add it to the camera
     const listener = new THREE.AudioListener();
@@ -75,8 +82,22 @@ export class Obstacle {
       sound.setVolume( 1.0 );
     });
 
-
     this.sound =  sound
+  }
+
+  getCamera(scene ) {
+    let camera 
+    
+    scene.children.forEach( i => {
+      const p  = Object.getPrototypeOf( i )
+      const pp = Object.getPrototypeOf( p )
+      const ppc = pp.constructor.name
+      if ( ppc == "Camera" ) {
+        camera = i
+      } 
+    }) 
+
+    return camera
   }
 
 	reset() {
@@ -85,15 +106,13 @@ export class Obstacle {
 		this.cuttingTime = 0
 		this.fallingTime = 0
 
-		this.beforeMesh .position.copy(this.beforeMStartPos)
-    this.haloMesh   .position.copy(this.haloMStartPos  )
-		this.beforePivot.position.copy(this.beforePStartPos)
+    for (let i = 0; i < 4; i++) {
+      const m = this.meshes[i]
+      m.position.copy( this.startPos[i] )
+      m.rotation.copy( this.startRot[i] )
+    }
 
-		this.beforeMesh .rotation.copy(this.beforeMStartRot)
-    this.haloMesh   .rotation.copy(this.haloMStartRot  )
-		this.beforePivot.rotation.copy(this.beforePStartRot)
-
-    this.haloMesh.material.opacity = 0
+    this.meshes[this.BEFORE_1].material.opacity = 0
 	}
 
   startCuttOff() {
@@ -110,7 +129,6 @@ export class Obstacle {
   update(dt) {
     if ( ! this.isCut ) return
 
-
     if ( this.waitTime < this.waitPeriod  )  {
       this.waitTime += dt
       return 
@@ -124,11 +142,11 @@ export class Obstacle {
 
     this.fallingTime += dt
     this.update1(dt)
-
   }
 
 	update0(dt) {
-    const rot = this.beforePivot.rotation
+    const m = this.meshes[this.BEFORE]
+    const rot = m.rotation
 		const vrz = - 0.05
 		const rz  = vrz * dt + rot.z
     rot.z = rz
@@ -136,8 +154,10 @@ export class Obstacle {
 
 
   update1(dt) {
-    const pos    = this.beforePivot.position
-    const t      = this.fallingTime
+    const m   = this.meshes[this.BEFORE]
+    const pos = m.position
+    const rot = m.rotation
+    const t   = this.fallingTime
 
     const alpha = - 0.005
     const beta  = 300.0
@@ -149,8 +169,6 @@ export class Obstacle {
     pos.y = y
     pos.x = x
 
-
-    const rot = this.beforePivot.rotation
 		const vrz = - 0.5
 		const rz  = vrz * dt + rot.z
     rot.z = rz

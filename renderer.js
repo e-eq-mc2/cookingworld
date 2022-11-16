@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 //import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { Obstacle }  from  './obstacle.js'
+import { Food }  from  './food.js'
 const Common = require("./lib/common.js")
 
 function randomRange(min, max) {
@@ -24,7 +24,7 @@ let renderer, scene, camera, stats
 let mouseX = 0
 let mouseY = 0
 
-let obstacle
+let food
 
 init()
 let lastUpdate = performance.now()
@@ -66,7 +66,7 @@ function init() {
   const bookWidth   = 10
   const bookHeight  = 10
   const fnames = ["img/tomato_0.png", "img/tomato_1.png", "img/tomato_2.png"]
-  obstacle = new Obstacle(fnames, bookWidth, bookHeight, camera, scene)
+  food = new Food(fnames, bookWidth, bookHeight, scene)
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -133,7 +133,7 @@ function render() {
   }
   lastUpdate = now
 
-  obstacle.update(deltaT)
+  food.update(deltaT)
 
 	renderer.render(scene, camera)		
   stats.update()
@@ -145,11 +145,11 @@ document.body.addEventListener("keydown", function(e) {
 
   switch(true) {
     case e.key == 'c':
-      obstacle.startCuttOff()
+      food.startCuttOff()
       break
 
     case e.key == 'r':
-      obstacle.reset()
+      food.reset()
       break
       break
 
