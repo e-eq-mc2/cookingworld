@@ -11,7 +11,7 @@ import { Food }  from  './food.js'
 const Common = require("./lib/common.js")
 
 function randomRange(min, max) {
-	return ((Math.random()*(max-min)) + min); 
+  return ((Math.random()*(max-min)) + min); 
 }
 
 //let SCREEN_WIDTH  = window.innerWidth
@@ -35,20 +35,20 @@ function init() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight )
   document.body.appendChild( renderer.domElement )
-	//renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  //renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   //container.appendChild( renderer.domElement );
 
-	scene = new THREE.Scene();
+  scene = new THREE.Scene();
 
-	camera = new THREE.PerspectiveCamera(
+  camera = new THREE.PerspectiveCamera(
     55,
     window.innerWidth / window.innerHeight,
     0.01, 
     100 
   );
 
-	camera.position.z = 15
-	scene.add(camera)
+  camera.position.z = 15
+  scene.add(camera)
 
   // 環境光源
   const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.3)
@@ -82,34 +82,34 @@ function init() {
 
 function onDocumentMouseMove( event ) {
 
-	mouseX = event.clientX - windowHalfX;
-	mouseY = event.clientY - windowHalfY;
+  mouseX = event.clientX - windowHalfX;
+  mouseY = event.clientY - windowHalfY;
 }
 
 function onDocumentTouchStart( event ) {
 
-	if ( event.touches.length == 1 ) {
+  if ( event.touches.length == 1 ) {
 
-		event.preventDefault();
+    event.preventDefault();
 
     const windowHalfX   = window.innerWidth / 2
     const windowHalfY   = window.innerHeight / 2
     mouseX = event.touches[ 0 ].pageX - windowHalfX;
-		mouseY = event.touches[ 0 ].pageY - windowHalfY;
-	}
+    mouseY = event.touches[ 0 ].pageY - windowHalfY;
+  }
 }
 
 function onDocumentTouchMove( event ) {
 
-	if ( event.touches.length == 1 ) {
+  if ( event.touches.length == 1 ) {
 
-		event.preventDefault();
+    event.preventDefault();
 
     const windowHalfX   = window.innerWidth / 2
     const windowHalfY   = window.innerHeight / 2
-		mouseX = event.touches[ 0 ].pageX - windowHalfX;
-		mouseY = event.touches[ 0 ].pageY - windowHalfY;
-	}
+    mouseX = event.touches[ 0 ].pageX - windowHalfX;
+    mouseY = event.touches[ 0 ].pageY - windowHalfY;
+  }
 }
 
 function onWindowResize() {
@@ -135,7 +135,7 @@ function render() {
 
   food.update(deltaT)
 
-	renderer.render(scene, camera)		
+  renderer.render(scene, camera)
   stats.update()
 }
 

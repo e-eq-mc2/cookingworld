@@ -52,7 +52,7 @@ export class Food {
     this.waitPeriod = 2
 
     this.cuttingTime = 0
-		this.cuttingPeriod = 5
+    this.cuttingPeriod = 5
 
     this.fallingTime = 0
     this.isCut = false
@@ -100,11 +100,11 @@ export class Food {
     return camera
   }
 
-	reset() {
-	  this.isCut = false
+  reset() {
+    this.isCut = false
     this.waitTime = 0
-		this.cuttingTime = 0
-		this.fallingTime = 0
+    this.cuttingTime = 0
+    this.fallingTime = 0
 
     for (let i = 0; i < 4; i++) {
       const m = this.meshes[i]
@@ -113,7 +113,7 @@ export class Food {
     }
 
     this.meshes[this.BEFORE_1].material.opacity = 0
-	}
+  }
 
   startCuttOff() {
     this.waitTime = 0
@@ -134,23 +134,23 @@ export class Food {
       return 
     }
 
-		if ( this.cuttingTime < this.cuttingPeriod ) {
+    if ( this.cuttingTime < this.cuttingPeriod ) {
       this.cuttingTime += dt
-			this.update0(dt)
+      this.update0(dt)
       return
-		} 
+    } 
 
     this.fallingTime += dt
     this.update1(dt)
   }
 
-	update0(dt) {
+  update0(dt) {
     const m = this.meshes[this.BEFORE]
     const rot = m.rotation
-		const vrz = - 0.05
-		const rz  = vrz * dt + rot.z
+    const vrz = - 0.05
+    const rz  = vrz * dt + rot.z
     rot.z = rz
-	}
+  }
 
 
   update1(dt) {
@@ -169,17 +169,17 @@ export class Food {
     pos.y = y
     pos.x = x
 
-		const vrz = - 0.5
-		const rz  = vrz * dt + rot.z
+    const vrz = - 0.5
+    const rz  = vrz * dt + rot.z
     rot.z = rz
   }
 
-	normalDistribution(x, sd,mean) {
-	  const a = ( x - mean ) / sd
-		const b = 1 / ( Math.sqrt( 2 * Math.PI ) * sd ) 
+  normalDistribution(x, sd,mean) {
+    const a = ( x - mean ) / sd
+    const b = 1 / ( Math.sqrt( 2 * Math.PI ) * sd ) 
     const y = b * Math.exp ( - 0.5 * a * a ) 
-		return y
-	}
+    return y
+  }
 
   plateGeometry(w, h, wsegs, hsegs) {
     const geometry = new THREE.PlaneGeometry(w, h, wsegs, hsegs)
