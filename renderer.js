@@ -44,10 +44,10 @@ function init() {
     55,
     window.innerWidth / window.innerHeight,
     0.01, 
-    100 
-  );
+    1000 
+  )
 
-  camera.position.z = 15
+  camera.position.z = 150
   scene.add(camera)
 
   // 環境光源
@@ -144,8 +144,12 @@ document.body.addEventListener("keydown", function(e) {
   console.log(`key: ${e.key}`);
 
   switch(true) {
+    case e.key == 'd':
+      food.startDropping()
+      break
+
     case e.key == 'c':
-      food.startCuttOff()
+      food.startCutting()
       break
 
     case e.key == 'r':

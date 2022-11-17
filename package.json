@@ -21,6 +21,7 @@
   "dependencies": {
     "animejs": "^3.2.1",
     "cubic-bezier-easing": "^1.0.18",
+    "matter-js": "^0.18.0",
     "net": "^1.0.2",
     "three": "^0.138.0"
   }
