@@ -1,5 +1,4 @@
 const THREE = require('three');
-const Matter = require('matter-js');
 //import { SceneUtils } from 'three/examples/jsm/utils/SceneUtils.js'
 import { createMultiMaterialObject } from 'three/examples/jsm/utils/SceneUtils.js'
 import CubicBezier from 'cubic-bezier-easing'
@@ -41,53 +40,31 @@ export class Food {
     this.meshes.push( a )
 
     scene.add( this.meshes[this.ALL] )
-    this.meshes[this.ALL].position.y = 200
+    this.meshes[this.ALL].position.y = 100
 
     this.startPos = [] 
     this.startRot = [] 
     for (let i = 0; i < this.ALL + 1; i++) {
       const m = this.meshes[i]
       this.startPos.push( m.position.clone() )
-      this.startRot.push( m.rotation.clone() )
-    }
-
+      this.startRot.push( m.rotation.clone() ) }
     this.meshes[this.BEFORE_1].material.opacity = 0
 
-    this.waitTime   = 0 
-    this.waitPeriod = 2
-
-    this.cuttingTime = 0
+    this.state = 'init'
+    this.waitTime      = 0 
+    this.waitPeriod    = 2
+    this.cuttingTime   = 0
     this.cuttingPeriod = 5
-
-    this.fallingTime = 0
-
-    this.isDropping = false
-    this.isCutting = false
-
-    this.setupSound(scene)
+    this.fallingTime   = 0
 
     this.setupPhisics()
+    this.setupSound(scene)
   }
 
   setupPhisics() {
-    // create engine
-    this.engine = Matter.Engine.create()
-    this.engine.gravity.y = - 1
-    const world = this.engine.world
-
-		// walls
-    const thickness = 50.0
-    const width =  1024.0
-    Matter.Composite.add(world, [
-        Matter.Bodies.rectangle(0, - thickness / 2, width, thickness, { isStatic: true }),
-    ]);
-
-    const x = this.meshes[this.ALL].position.x
-    const y = this.meshes[this.ALL].position.y
-
-    const size = 10 
-    this.body = Matter.Bodies.circle(x, y, size, {restitution: 1.1});
-    Matter.World.add(world, this.body)
+    this.gravity    = new THREE.Vector3( 0, -1, 0 )
+    this.velocity   = new THREE.Vector3( 0, 0, 0 )
+    this.energyLoss = 0.5
   }
 
   setupSound(scene) {
@@ -129,9 +106,8 @@ export class Food {
   }
 
   reset() {
-    this.isDropping = false
-    this.isCutting  = false
-    this.waitTime = 0
+    this.state = 'init'
+    this.waitTime    = 0
     this.cuttingTime = 0
     this.fallingTime = 0
 
@@ -145,12 +121,10 @@ export class Food {
   }
 
   startCutting() {
-    this.waitTime = 0
+    this.state = 'cut'
+    this.waitTime    = 0
     this.cuttingTime = 0
     this.fallingTime = 0
-
-    this.isCutting = true
-    this.isDropping = false
 
     this.sound.play();
 
@@ -158,39 +132,61 @@ export class Food {
   }
 
   startDropping() {
-    this.isDropping = true
+    this.state = 'drop'
   }
 
   update(dt) {
 
-    if ( this.isDropping ) {
-      Matter.Engine.update(this.engine, 3)
-      const x = this.body.position.x 
-      const y = this.body.position.y 
-      const pos = this.meshes[this.ALL].position
-      pos.x = x
-      pos.y = y
-      return
+
+    switch (this.state) {
+      case 'drop':
+        this.updateDrop(dt)
+        break;
+      case 'cut':
+        if ( this.waitTime < this.waitPeriod  )  {
+          this.waitTime += dt
+          this.updateWait(dt)
+          break
+        }
+
+        if ( this.cuttingTime < this.cuttingPeriod ) {
+          this.cuttingTime += dt
+          this.updateCut(dt)
+          break
+        } 
+
+        this.fallingTime += dt
+        this.updateFall(dt)
+        break
+      default: 
+        break
     }
 
-    if ( ! this.isCutting ) return
-
-    if ( this.waitTime < this.waitPeriod  )  {
-      this.waitTime += dt
-      return 
-    }
-
-    if ( this.cuttingTime < this.cuttingPeriod ) {
-      this.cuttingTime += dt
-      this.update0(dt)
-      return
-    } 
-
-    this.fallingTime += dt
-    this.update1(dt)
   }
 
-  update0(dt) {
+  updateDrop(dt) {
+    const m = this.meshes[this.ALL]
+    const pos = m.position
+    
+    pos.x += this.velocity.x * dt
+    pos.y += this.velocity.y * dt
+    pos.z += this.velocity.z * dt
+
+    this.velocity.x += this.gravity.x
+    this.velocity.y += this.gravity.y
+    this.velocity.z += this.gravity.z
+
+    if ( pos.y < 0  ) {
+      this.velocity.y = - this.velocity.y * this.energyLoss
+      pos.y = 0
+    }
+  }
+
+
+  updateWait(dt) {
+  }
+
+  updateCut(dt) {
     const m = this.meshes[this.BEFORE]
     const rot = m.rotation
     const vrz = - 0.05
@@ -198,7 +194,7 @@ export class Food {
     rot.z = rz
   }
 
-  update1(dt) {
+  updateFall(dt) {
     const m   = this.meshes[this.BEFORE]
     const pos = m.position
     const rot = m.rotation
