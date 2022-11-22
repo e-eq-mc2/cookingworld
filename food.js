@@ -1,9 +1,6 @@
 const THREE = require('three');
-//import { SceneUtils } from 'three/examples/jsm/utils/SceneUtils.js'
-import { createMultiMaterialObject } from 'three/examples/jsm/utils/SceneUtils.js'
-import CubicBezier from 'cubic-bezier-easing'
+import { Sound }  from  './sound.js'
 const Common   = require("./lib/common.js")
-const Colormap = require("./lib/colormap.js")
 
 // Particle3D class
 const TO_RADIANS = Math.PI/180.0
@@ -26,7 +23,7 @@ export class Food {
       const mesh = new THREE.Mesh(geometry, material)
       this.meshes.push( mesh ) 
       mesh.translateY(height / 2.0)
-      mesh.translateZ( i * -0.1   )
+      mesh.translateZ( i * - 0.3   )
     }
 
     const b = new THREE.Group()
@@ -59,52 +56,13 @@ export class Food {
     this.fallingTime   = 0
 
     this.setupPhisics()
-    this.setupSound(scene)
+    this.sound = new Sound("sound/cut.mp3", scene, 0.7, 1.0)
   }
 
   setupPhisics() {
     this.gravity    = new THREE.Vector3( 0, -0.7, 0 )
     this.velocity   = new THREE.Vector3( 0, 0, 0 )
     this.energyLoss = 0.6
-  }
-
-  setupSound(scene) {
-    const camera = getCamera(scene)
-
-    // create an AudioListener and add it to the camera
-    const listener = new THREE.AudioListener();
-    camera.add( listener );
-
-    // create a global audio source
-    const sound = new THREE.Audio( listener );
-
-    // load a sound and set it as the Audio object's buffer
-    const audioLoader = new THREE.AudioLoader();
-
-    audioLoader.load( 'sound/cut.mp3', function( buffer ) {
-      sound.setBuffer( buffer );
-      //sound.setLoop( true );
-      sound.playbackRate = 0.7
-      sound.setVolume( 1.0 );
-    });
-
-    this.sound =  sound
-
-
-    function  getCamera(scene ) {
-      let camera 
-
-      scene.children.forEach( i => {
-        const p  = Object.getPrototypeOf( i )
-        const pp = Object.getPrototypeOf( p )
-        const ppc = pp.constructor.name
-        if ( ppc == "Camera" ) {
-          camera = i
-        } 
-      }) 
-
-      return camera
-    }
   }
 
   reset() {
@@ -128,7 +86,7 @@ export class Food {
     this.cuttingTime = 0
     this.fallingTime = 0
 
-    this.sound.play();
+    this.sound.play()
 
     this.meshes[this.BEFORE_1].material.opacity = 1
   }
@@ -243,8 +201,6 @@ export class Food {
     const rz  = vrz * dt + rot.z
     rot.z = rz
   }
-
-
 
   normalDistribution(x, sd,mean) {
     const a = ( x - mean ) / sd
