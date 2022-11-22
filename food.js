@@ -40,14 +40,15 @@ export class Food {
     this.meshes.push( a )
 
     scene.add( this.meshes[this.ALL] )
-    this.meshes[this.ALL].position.y = 100
+    this.meshes[this.ALL].position.y = 60
 
     this.startPos = [] 
     this.startRot = [] 
     for (let i = 0; i < this.ALL + 1; i++) {
       const m = this.meshes[i]
       this.startPos.push( m.position.clone() )
-      this.startRot.push( m.rotation.clone() ) }
+      this.startRot.push( m.rotation.clone() ) 
+    }
     this.meshes[this.BEFORE_1].material.opacity = 0
 
     this.state = 'init'
@@ -62,13 +63,13 @@ export class Food {
   }
 
   setupPhisics() {
-    this.gravity    = new THREE.Vector3( 0, -1, 0 )
+    this.gravity    = new THREE.Vector3( 0, -0.7, 0 )
     this.velocity   = new THREE.Vector3( 0, 0, 0 )
-    this.energyLoss = 0.5
+    this.energyLoss = 0.6
   }
 
   setupSound(scene) {
-    const camera = this.getCamera(scene)
+    const camera = getCamera(scene)
 
     // create an AudioListener and add it to the camera
     const listener = new THREE.AudioListener();
@@ -88,21 +89,22 @@ export class Food {
     });
 
     this.sound =  sound
-  }
 
-  getCamera(scene ) {
-    let camera 
-    
-    scene.children.forEach( i => {
-      const p  = Object.getPrototypeOf( i )
-      const pp = Object.getPrototypeOf( p )
-      const ppc = pp.constructor.name
-      if ( ppc == "Camera" ) {
-        camera = i
-      } 
-    }) 
 
-    return camera
+    function  getCamera(scene ) {
+      let camera 
+
+      scene.children.forEach( i => {
+        const p  = Object.getPrototypeOf( i )
+        const pp = Object.getPrototypeOf( p )
+        const ppc = pp.constructor.name
+        if ( ppc == "Camera" ) {
+          camera = i
+        } 
+      }) 
+
+      return camera
+    }
   }
 
   reset() {
@@ -111,7 +113,7 @@ export class Food {
     this.cuttingTime = 0
     this.fallingTime = 0
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < this.ALL + 1; i++) {
       const m = this.meshes[i]
       m.position.copy( this.startPos[i] )
       m.rotation.copy( this.startRot[i] )
@@ -135,12 +137,15 @@ export class Food {
     this.state = 'drop'
   }
 
-  update(dt) {
+  startFin() {
+    this.state = 'fin'
+  }
 
+  update(dt) {
 
     switch (this.state) {
       case 'drop':
-        this.updateDrop(dt)
+        this.updateDrop(dt / 4)
         break;
       case 'cut':
         if ( this.waitTime < this.waitPeriod  )  {
@@ -158,10 +163,13 @@ export class Food {
         this.fallingTime += dt
         this.updateFall(dt)
         break
+      case 'fin':
+        this.updateFin(dt)
+        break
+
       default: 
         break
     }
-
   }
 
   updateDrop(dt) {
@@ -214,6 +222,29 @@ export class Food {
     const rz  = vrz * dt + rot.z
     rot.z = rz
   }
+
+  updateFin(dt) {
+    const m   = this.meshes[this.AFTER]
+    const pos = m.position
+    const rot = m.rotation
+    const t   = this.fallingTime
+
+    const alpha = - 0.005
+    const beta  = 300.0
+    const vy    = - beta * ( 1 - Math.exp( alpha * Math.pow(t, 1.8) ) ) 
+    const vx    = - this.normalDistribution(t, Math.sqrt(16.0), 0) * 3
+    const y     = vy * dt + pos.y
+    const x     = vx * dt + pos.x
+   
+    pos.y = y
+    pos.x = x
+
+    const vrz = 0.5
+    const rz  = vrz * dt + rot.z
+    rot.z = rz
+  }
+
+
 
   normalDistribution(x, sd,mean) {
     const a = ( x - mean ) / sd

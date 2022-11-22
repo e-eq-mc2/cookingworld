@@ -1,13 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
-//import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-//import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-//import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-//import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { Food }  from  './food.js'
+import { Smoke }  from  './smoke.js'
 const Common = require("./lib/common.js")
 
 function randomRange(min, max) {
@@ -25,6 +20,7 @@ let mouseX = 0
 let mouseY = 0
 
 let food
+let smoke
 
 init()
 let lastUpdate = performance.now()
@@ -47,7 +43,6 @@ function init() {
     1000 
   )
 
-  camera.position.z = 150
   scene.add(camera)
 
   // 環境光源
@@ -63,10 +58,10 @@ function init() {
   const axesHelper = new THREE.AxesHelper( 5 )
   scene.add( axesHelper )
 
-  const bookWidth   = 10
-  const bookHeight  = 10
   const fnames = ["img/tomato_0.png", "img/tomato_1.png", "img/tomato_2.png"]
-  food = new Food(fnames, bookWidth, bookHeight, scene)
+  food = new Food(fnames, 10, 10, scene)
+
+  smoke = new Smoke("img/smoke.png", 10, 10, 3, scene)
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -74,8 +69,9 @@ function init() {
   //document.body.appendChild( stats.dom );
 
   const controls = new OrbitControls( camera, renderer.domElement );
-  camera.position.y += 0.3
-  controls.target.y += 0.3
+  camera.position.z = 30
+  camera.position.y = 10
+  controls.target.y = 10
 
   controls.update();
 }
@@ -134,6 +130,7 @@ function render() {
   lastUpdate = now
 
   food.update(deltaT)
+  smoke.update(deltaT)
 
   renderer.render(scene, camera)
   stats.update()
@@ -146,10 +143,15 @@ document.body.addEventListener("keydown", function(e) {
   switch(true) {
     case e.key == 'd':
       food.startDropping()
+      smoke.start()
       break
 
     case e.key == 'c':
       food.startCutting()
+      break
+
+    case e.key == 'f':
+      food.startFin()
       break
 
     case e.key == 'r':
