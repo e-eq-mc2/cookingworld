@@ -55,6 +55,8 @@ export class Food {
     this.cuttingPeriod = 5
     this.fallingTime   = 0
 
+    this.length = ((width + height) / 2) * 0.5
+
     this.setupPhisics()
     this.sound = new Sound("sound/cut.mp3", scene, 0.7, 1.0)
   }
@@ -62,7 +64,7 @@ export class Food {
   setupPhisics() {
     this.gravity    = new THREE.Vector3( 0, -0.7, 0 )
     this.velocity   = new THREE.Vector3( 0, 0, 0 )
-    this.energyLoss = 0.6
+    this.energyLoss = 0.5
   }
 
   reset() {
@@ -71,6 +73,8 @@ export class Food {
     this.cuttingTime = 0
     this.fallingTime = 0
 
+    this.velocity.set(0, 0, 0)
+
     for (let i = 0; i < this.ALL + 1; i++) {
       const m = this.meshes[i]
       m.position.copy( this.startPos[i] )
@@ -78,6 +82,7 @@ export class Food {
     }
 
     this.meshes[this.BEFORE_1].material.opacity = 0
+
   }
 
   startCutting() {
@@ -85,6 +90,8 @@ export class Food {
     this.waitTime    = 0
     this.cuttingTime = 0
     this.fallingTime = 0
+    this.velocity.set(0, 0, 0)
+    this.gravity.set(0, -0.1, 0)
 
     this.sound.play()
 
@@ -93,10 +100,14 @@ export class Food {
 
   startDropping() {
     this.state = 'drop'
+    this.velocity.set(0, 0, 0)
+    this.gravity.set(0, -0.7, 0)
   }
 
   startFin() {
     this.state = 'fin'
+    this.gravity.set(0, 0, 0)
+    this.velocity.set(0, 0, 0)
   }
 
   update(dt) {
@@ -146,8 +157,12 @@ export class Food {
       this.velocity.y = - this.velocity.y * this.energyLoss
       pos.y = 0
     }
-  }
 
+    if ( pos.y < 0.01 && this.velocity.y > 0 && this.velocity.y < 1.0 ) {
+      this.velocity.y = 0
+      pos.y = 0
+    }
+  }
 
   updateWait(dt) {
   }
@@ -166,15 +181,15 @@ export class Food {
     const rot = m.rotation
     const t   = this.fallingTime
 
-    const alpha = - 0.005
-    const beta  = 300.0
-    const vy    = - beta * ( 1 - Math.exp( alpha * Math.pow(t, 1.8) ) ) 
-    const vx    = this.normalDistribution(t, Math.sqrt(16.0), 0) * 3
-    const y     = vy * dt + pos.y
-    const x     = vx * dt + pos.x
-   
-    pos.y = y
-    pos.x = x
+    this.velocity.x = this.normalDistribution(t, Math.sqrt(16.0), 0) * 3
+    
+    pos.x += this.velocity.x * dt
+    pos.y += this.velocity.y * dt
+    pos.z += this.velocity.z * dt
+
+    //this.velocity.x += this.gravity.x
+    this.velocity.y += this.gravity.y
+    this.velocity.z += this.gravity.z
 
     const vrz = - 0.5
     const rz  = vrz * dt + rot.z
@@ -185,21 +200,17 @@ export class Food {
     const m   = this.meshes[this.AFTER]
     const pos = m.position
     const rot = m.rotation
-    const t   = this.fallingTime
 
-    const alpha = - 0.005
-    const beta  = 300.0
-    const vy    = - beta * ( 1 - Math.exp( alpha * Math.pow(t, 1.8) ) ) 
-    const vx    = - this.normalDistribution(t, Math.sqrt(16.0), 0) * 3
-    const y     = vy * dt + pos.y
-    const x     = vx * dt + pos.x
-   
-    pos.y = y
-    pos.x = x
+    const va = - 60
+    const vr = (va / 360) * 2 * Math.PI
+    const dr = vr * dt
+    const dx = -dr * this.length
+    const dy = -dx * 0.3
 
-    const vrz = 0.5
-    const rz  = vrz * dt + rot.z
-    rot.z = rz
+    rot.z += dr
+    pos.x += dx
+    pos.y += dy
+
   }
 
   normalDistribution(x, sd,mean) {
