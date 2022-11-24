@@ -50,6 +50,7 @@ export class Smoke {
   }
 
   appear() {
+    console.log('aaaaaa')
     this.setupTween()
     this.tween.start()
     this.sound0.play()

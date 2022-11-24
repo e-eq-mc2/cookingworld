@@ -7,7 +7,6 @@ const TO_RADIANS = Math.PI/180.0
 
 export class Food {
   constructor(fnames, width, height, scene) {
-
     this.BEFORE_0 = 0
     this.BEFORE_1 = 1
     this.AFTER    = 2
@@ -37,7 +36,7 @@ export class Food {
     this.meshes.push( a )
 
     scene.add( this.meshes[this.ALL] )
-    this.meshes[this.ALL].position.y = 60
+    this.meshes[this.ALL].position.y = 20
 
     this.startPos = [] 
     this.startRot = [] 
@@ -48,7 +47,8 @@ export class Food {
     }
     this.meshes[this.BEFORE_1].material.opacity = 0
 
-    this.state = 'init'
+    this.state = 0
+    this.actions = [this.startInit, this.startDropping, this.startCutting, this.startFin]
     this.waitTime      = 0 
     this.waitPeriod    = 2
     this.cuttingTime   = 0
@@ -62,13 +62,19 @@ export class Food {
   }
 
   setupPhisics() {
-    this.gravity    = new THREE.Vector3( 0, -0.7, 0 )
-    this.velocity   = new THREE.Vector3( 0, 0, 0 )
-    this.energyLoss = 0.5
+    this.gravity    = new THREE.Vector3( 0, 0.0, 0 )
+    this.velocity   = new THREE.Vector3( 0, 0.0, 0 )
+    this.energyLoss = 0.7
+  }
+
+  next() {
+    this.state += 1 
+    if ( this.state >= this.actions.length ) this.state = 0
+    this.actions[this.state].call(this)
   }
 
   reset() {
-    this.state = 'init'
+    this.state = 0
     this.waitTime    = 0
     this.cuttingTime = 0
     this.fallingTime = 0
@@ -82,11 +88,18 @@ export class Food {
     }
 
     this.meshes[this.BEFORE_1].material.opacity = 0
+  }
 
+  startInit() {
+    this.reset()
+  }
+
+  startDropping() {
+    this.velocity.set(0, -10.0, 0)
+    this.gravity.set(0, -0.7, 0)
   }
 
   startCutting() {
-    this.state = 'cut'
     this.waitTime    = 0
     this.cuttingTime = 0
     this.fallingTime = 0
@@ -98,25 +111,19 @@ export class Food {
     this.meshes[this.BEFORE_1].material.opacity = 1
   }
 
-  startDropping() {
-    this.state = 'drop'
-    this.velocity.set(0, 0, 0)
-    this.gravity.set(0, -0.7, 0)
-  }
-
   startFin() {
-    this.state = 'fin'
     this.gravity.set(0, 0, 0)
     this.velocity.set(0, 0, 0)
   }
 
   update(dt) {
-
     switch (this.state) {
-      case 'drop':
+      case 0:
+        break;
+      case 1:
         this.updateDrop(dt / 4)
         break;
-      case 'cut':
+      case 2:
         if ( this.waitTime < this.waitPeriod  )  {
           this.waitTime += dt
           this.updateWait(dt)
@@ -132,7 +139,7 @@ export class Food {
         this.fallingTime += dt
         this.updateFall(dt)
         break
-      case 'fin':
+      case 3:
         this.updateFin(dt)
         break
 
@@ -158,7 +165,7 @@ export class Food {
       pos.y = 0
     }
 
-    if ( pos.y < 0.01 && this.velocity.y > 0 && this.velocity.y < 1.0 ) {
+    if ( pos.y < 0.05 && this.velocity.y > 0 && this.velocity.y < 3.0 ) {
       this.velocity.y = 0
       pos.y = 0
     }
@@ -197,20 +204,30 @@ export class Food {
   }
 
   updateFin(dt) {
+    const vx = 1.5
+    const dx = vx * dt
+    this.moveX( dx )
+  }
+
+  moveLeft(dx = -0.08) {
+    this.moveX(dx)
+  }
+
+  moveRight(dx = 0.08) {
+    this.moveX(dx)
+  }
+
+  moveX(dx) {
     const m   = this.meshes[this.AFTER]
     const pos = m.position
     const rot = m.rotation
 
-    const va = - 60
-    const vr = (va / 360) * 2 * Math.PI
-    const dr = vr * dt
-    const dx = -dr * this.length
-    const dy = -dx * 0.3
+    const dr = - dx / this.length
+    const dy = - Math.abs(dx) * 0.3 
 
     rot.z += dr
     pos.x += dx
     pos.y += dy
-
   }
 
   normalDistribution(x, sd,mean) {

@@ -10,6 +10,7 @@ let renderer, scene, camera, stats
 let mouseX = 0
 let mouseY = 0
 
+let activeObj
 let food
 let kutiyose
 
@@ -51,8 +52,9 @@ function init() {
 
   const fnames = ["img/tomato_0.png", "img/tomato_1.png", "img/tomato_2.png"]
   food = new Food(fnames, 10, 10, scene)
-
   kutiyose = new Kutiyose("img/snail.png", 10, 10, scene)
+
+  activeObj = food
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -100,7 +102,6 @@ function onDocumentTouchMove( event ) {
 }
 
 function onWindowResize() {
-
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 
@@ -120,8 +121,7 @@ function render() {
   }
   lastUpdate = now
 
-  food.update(deltaT)
-  kutiyose.update(deltaT)
+  activeObj.update(deltaT)
 
   renderer.render(scene, camera)
   stats.update()
@@ -132,28 +132,24 @@ document.body.addEventListener("keydown", function(e) {
   console.log(`key: ${e.key}`);
 
   switch(true) {
-    case e.key == 'd':
-      food.startDropping()
+    case e.key == '0':
+      activeObj = food
       break
 
-    case e.key == 'c':
-      food.startCutting()
+    case e.key == '1':
+      activeObj = kutiyose
       break
 
-    case e.key == 'f':
-      food.startFin()
+    case e.key == ' ':
+      activeObj.next()
       break
 
-    case e.key == 'r':
-      food.reset()
+    case e.key == 'ArrowLeft':
+      activeObj.moveLeft()
       break
 
-    case e.key == 'a':
-      kutiyose.appear()
-      break
-
-    case e.key == 'A':
-      kutiyose.disappear()
+    case e.key == 'ArrowRight':
+      activeObj.moveRight()
       break
 
     default:

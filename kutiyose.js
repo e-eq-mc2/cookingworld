@@ -4,7 +4,6 @@ const TWEEN = require('@tweenjs/tween.js')
 import { Smoke }  from  './smoke.js'
 
 export class Kutiyose {
-
   constructor(fname, width, height, scene) {
     const geometry = this.plateGeometry(width, height, 1, 1)
     const material = this.plateMaterial(fname)
@@ -18,6 +17,9 @@ export class Kutiyose {
     this.color = {opacity: 0}
     this.syncColor()
 
+    this.state = 0
+    this.actions = [this.startInit, this.startAppear , this.startDisappear]
+
     this.setupTweenIn()
     this.setupTweenOut()
   }
@@ -29,7 +31,9 @@ export class Kutiyose {
     this.tweenIn
       .to({opacity: [0.1, 0.1, 0.2, 1]}, 2000)
       .easing(TWEEN.Easing.Linear.None)
-			.onUpdate((o) => { color.opacity = o.opacity })
+			.onUpdate((o) => { 
+        color.opacity = o.opacity 
+      })
   }
 
   setupTweenOut() {
@@ -40,9 +44,53 @@ export class Kutiyose {
       .to({opacity: [0.4, 0.1, 0]}, 2000)
       .easing(TWEEN.Easing.Linear.None)
 			.onUpdate((o) => { 
-        console.log(o)
         color.opacity = o.opacity 
       })
+  }
+
+
+  syncColor() {
+    this.mesh.material.opacity = this.color.opacity
+  }
+
+  next() {
+    this.state += 1 
+    if ( this.state >= this.actions.length ) this.state = 0
+    this.actions[this.state].call(this)
+  }
+
+  startInit() {
+  }
+
+  startAppear() {
+    this.smoke.appear()
+
+    this.setupTweenIn()
+    this.tweenIn.start()
+  }
+
+  startDisappear() {
+    this.smoke.disappear()
+
+    this.setupTweenOut()
+    this.tweenOut.start()
+  }
+
+  update(dt) {
+    if ( this.tweenIn  && this.tweenIn .isPlaying() ) this.tweenIn .update()
+    if ( this.tweenOut && this.tweenOut.isPlaying() ) this.tweenOut.update()
+    this.smoke.update(dt)
+    this.syncColor()
+  }
+
+  moveLeft(dx = -0.05) {
+    const m = this.mesh
+    m.position.x += dx
+  }
+
+  moveRight(dx = 0.05) {
+    const m = this.mesh
+    m.position.x += dx
   }
 
   plateGeometry(w, h, wsegs, hsegs) {
@@ -63,31 +111,4 @@ export class Kutiyose {
 
     return mat
   }
-
-  syncColor() {
-    this.mesh.material.opacity = this.color.opacity
-  }
-
-  appear() {
-    this.smoke.appear()
-
-    this.setupTweenIn()
-    this.tweenIn.start()
-  }
-
-  disappear() {
-    this.smoke.disappear()
-
-    this.setupTweenOut()
-    this.tweenOut.start()
-  }
-
-  update(dt) {
-    if ( this.tweenIn  && this.tweenIn .isPlaying() ) this.tweenIn .update()
-    if ( this.tweenOut && this.tweenOut.isPlaying() ) this.tweenOut.update()
-    this.smoke.update(dt)
-    this.syncColor()
-  }
 }
-
-
