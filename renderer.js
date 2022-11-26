@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { Food }  from  './food.js'
 import { Kutiyose }  from  './kutiyose.js'
+import { Boid }  from  './boid.js'
 const Common = require("./lib/common.js")
 
 let renderer, scene, camera, stats
@@ -13,6 +14,7 @@ let mouseY = 0
 let activeObj
 let food
 let kutiyose
+let boid
 
 // ---------- main 
 init()
@@ -55,6 +57,17 @@ function init() {
   kutiyose = new Kutiyose("img/snail.png", 10, 10, scene)
 
   activeObj = food
+
+
+  boid = new Boid()
+  const birdGeo = boid.makeBirdGeometry()
+  //const birdMat = new THREE.MeshBasicMaterial( { color:Math.random() * 0xffffff, side: THREE.DoubleSide } )
+  const birdMat = new THREE.MeshLambertMaterial( { color:Math.random() * 0xffffff, side: THREE.DoubleSide } )
+
+   const mesh = new THREE.Mesh( birdGeo ,  birdMat) ;
+
+   scene.add(mesh)
+
 
   window.addEventListener( 'resize', onWindowResize )
 
