@@ -1,14 +1,175 @@
 const THREE = require('three');
+import {MeshLine, MeshLineMaterial} from 'meshline'
 const Common = require("./lib/common.js")
+
+export class Bird {
+  constructor(scene) {
+    const geometry = this.birdGeometry()
+    const material = this.birdMaterial()
+
+    this.mesh = new THREE.Mesh(geometry , material)
+    scene.add(this.mesh)
+    //this.mesh.scale.x = 0.15
+    //this.mesh.scale.y = 0.15
+    //this.mesh.scale.z = 0.15
+
+    this.phase = Math.floor( Math.random() * 62.83 )
+  }
+
+  birdGeometry() {
+    const geometry = new THREE.BufferGeometry();
+
+    const verts = []
+    // body
+    verts.push( new THREE.Vector3(   5,   0,   0 ) )  // 0
+    verts.push( new THREE.Vector3( - 5,   0,   0 ) )  // 1
+    verts.push( new THREE.Vector3( - 5, - 2,   0 ) )  // 2
+    // left wing
+    verts.push( new THREE.Vector3(   0,   2, - 6 ) ) // 3
+    verts.push( new THREE.Vector3( - 3,   0,   0 ) ) // 4
+    verts.push( new THREE.Vector3(   2,   0,   0 ) ) // 5
+    // right wing
+    verts.push( new THREE.Vector3(   0,   2,   6 ) ) // 6
+    verts.push( new THREE.Vector3(   2,   0,   0 ) ) // 7
+    verts.push( new THREE.Vector3( - 3,   0,   0 ) ) // 8
+
+    geometry.setFromPoints(verts)
+
+    const vns = []
+    for (let f = 0; f <  3; ++f) {
+      const i0 = f
+      const i1 = f + 1
+      const i2 = f + 2
+
+      const n = this.computeNormal(verts[i0], verts[i1], verts[i2])
+      vns.push(n.x, n.y, n.z)
+      vns.push(n.x, n.y, n.z)
+      vns.push(n.x, n.y, n.z)
+    }
+
+    const normals = new THREE.Float32BufferAttribute(vns, 3 )
+    geometry.setAttribute( 'normal', normals)
+
+    return geometry
+  }
+
+  birdMaterial() {
+    const material = new THREE.MeshLambertMaterial( {
+      color: Math.random() * 0xffffff, 
+      side: THREE.DoubleSide,
+    } )
+
+    return material
+  }
+
+	update(position, velocity) {
+    this.mesh.position.x = position.x 
+    this.mesh.position.y = position.y
+    this.mesh.position.z = position.z
+
+		this.mesh.rotation.y = Math.atan2( - velocity.z, velocity.x );
+		this.mesh.rotation.z = Math.asin( velocity.y / velocity.length() )
+
+		this.phase = ( this.phase + ( Math.max( 0, this.mesh.rotation.z ) + 0.1 )  ) % 62.83
+
+		// flapping
+    const y = Math.sin( this.phase ) * 5
+		const verts   = this.mesh.geometry.getAttribute("position").array
+		verts[ 3 * 3 + 1] = y
+		verts[ 6 * 3 + 1] = y
+	}
+
+  computeNormal(a, b, c) {
+    // a ------ b
+    //  \      /
+    //    \   /
+    //      c 
+
+    const ba = new THREE.Vector3()
+    const ca = new THREE.Vector3()
+    ba.subVectors(b, a) // b - a
+    ca.subVectors(c, a) // c - a
+
+    const n = new THREE.Vector3()
+    n.crossVectors(ca, ba)
+    n.normalize()
+    return n
+  }
+}
+
+Bird.Line = class {
+  constructor(pos) {
+    const lineLength = 10
+    const points = []
+    for (let i=0; i<lineLength; ++i) {
+      points.push(pos.x)
+      points.push(pos.y)
+      points.push(pos.z)
+    }
+
+    // Create the line mesh
+    this.meshLine = new MeshLine()
+    this.meshLine.setPoints(points, p => { return p } ) // makes width taper (p is a decimal percentage of the number of points)
+
+    this.initMesh()
+  }
+
+  initMesh() {
+    const material = this.createMaterial()
+
+    this.mesh = new THREE.Mesh(this.meshLine.geometry, material)
+    this.mesh.frustumCulled = false
+  }
+
+  setColor(color) {
+     this.mesh.material.uniforms.color.value = color
+  }
+
+  createMaterial() {
+    const color = new THREE.Color( 0xffffff * Common.randomReal() )
+
+    const w = window.innerWidth
+    const h = window.innerHeight
+    const res = new THREE.Vector2(w, h)
+
+    // Create the line material
+    const material = new MeshLineMaterial({
+      color: new THREE.Color( "rgb(255, 2, 2)" ),
+      opacity: 1,
+      resolution: res,
+      sizeAttenuation: 1,
+      lineWidth: 0.8,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
+      transparent: false,
+      side: THREE.DoubleSide
+    })
+
+    return material
+  }
+
+  updateResolution() {
+    const w = window.innerWidth
+    const h = window.innerHeight
+    const r = new THREE.Vector2(w, h)
+    this.mesh.material.uniforms.resolution.value.copy( r )
+  }
+
+  advance(pos) {
+    // Advance the trail by one position
+    this.meshLine.advance(pos)
+  }
+}
 
 export class Boid {
   constructor() {
     this.vector = new THREE.Vector3()
-    this._width = 500
+    this._width  = 500
     this._height = 500
-    this._depth = 200 
+    this._depth  = 200
     this._neighborhoodRadius = 100
     this._maxSpeed = 4
+    this._maxSteerForce = 0.1
     this._avoidWalls = false
     this._goal = undefined 
 
@@ -18,89 +179,16 @@ export class Boid {
     this.trail_initialized = false
   }
 
-  makeBirdGeometry() {
-    const geometry = new THREE.BufferGeometry();
-
-    const verts = []
-    verts.push( new THREE.Vector3(   5,   0,   0 ) )
-    verts.push( new THREE.Vector3( - 5,   0,   0 ) )
-    //verts.push( new THREE.Vector3( - 5, - 2,   1 ) )
-    verts.push( new THREE.Vector3( - 5, - 2,   0 ) )
-
-    verts.push( new THREE.Vector3(   0,   2, - 6 ) ) // 4
-    verts.push( new THREE.Vector3( - 3,   0,   0 ) ) // 7
-    verts.push( new THREE.Vector3(   2,   0,   0 ) ) // 6
-
-    verts.push( new THREE.Vector3(   0,   2,   6 ) ) // 5
-    verts.push( new THREE.Vector3(   2,   0,   0 ) ) // 6
-    verts.push( new THREE.Vector3( - 3,   0,   0 ) ) // 7
-    geometry.setFromPoints(verts)
-
-    const normals = []
-    for (let f = 0; f <  3; ++f) {
-      const i0 = f
-      const i1 = f + 1
-      const i2 = f + 2
-      this.setNornmal(verts[i0], verts[i1], verts[i2], normals)
-    }
-    
-    geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute(normals, 3 ) )
-
-    return geometry
-  }
-
-  setNornmal(a, b, c, normals) {
-    const cb = new THREE.Vector3()
-    const ab = new THREE.Vector3()
-    cb.subVectors(c, b)
-    ab.subVectors(a, b)
-    cb.cross( ab )
-    cb.normalize()
-
-    normals.push(cb.x, cb.y, cb.z)
-    normals.push(cb.x, cb.y, cb.z)
-    normals.push(cb.x, cb.y, cb.z)
-  }
-
-
-
   initTrail (scene) {
-    // Create the line geometry used for storing verticies
-    this.trail_geometry = new THREE.Geometry()
-    for (var i = 0; i < 100; i++) {
-      // must initialize it to the number of positions it will keep or it will throw an error
-      this.trail_geometry.vertices.push(this.position.clone());
-    }
-
     // Create the line mesh
-    this.trail_line = new MeshLine();
-    this.trail_line.setGeometry( this.trail_geometry,  function( p ) { return p; }  ); // makes width taper
+    this.trail_initialized = true
+    this.trail_line = new Bird.Line(this.position)
+    scene.add(this.trail_line.mesh)
 
-    // Create the line material
-    this.trail_material = new MeshLineMaterial( {
-      color: new THREE.Color( "rgb(255, 2, 2)" ),
-      opacity: 1,
-      resolution: resolution,
-      sizeAttenuation: 1,
-      lineWidth: 1,
-      depthTest: false,
-      blending: THREE.AdditiveBlending,
-      transparent: false,
-      side: THREE.DoubleSide
-    });
-
-    this.trail_mesh = new THREE.Mesh( this.trail_line.geometry, this.trail_material ); // this syntax could definitely be improved!
-    this.trail_mesh.frustumCulled = false;
-
-    scene.add( this.trail_mesh );
-
-    this.trail_initialized = true;
   };
 
   setGoal( target ) {
-
     this._goal = target;
-
   };
 
   setAvoidWalls( value ) {
@@ -115,7 +203,6 @@ export class Boid {
   };
 
   run( boids ) {
-
     if ( this._avoidWalls ) {
       this.vector.set( - this._width, this.position.y, this.position.z );
       this.vector = this.avoid( this.vector );
@@ -160,7 +247,8 @@ export class Boid {
 
     }
 
-    this.move();
+    const  dt = 1.0
+    this.move(dt);
 
   };
 
@@ -178,7 +266,7 @@ export class Boid {
 
   };
 
-  move() {
+  move(dt) {
 
     this.velocity.add( this._acceleration );
 
@@ -190,11 +278,13 @@ export class Boid {
 
     }
 
-    this.position.add( this.velocity );
+    this.position.x += this.velocity.x * dt
+    this.position.y += this.velocity.y * dt
+    this.position.z += this.velocity.z * dt
     this._acceleration.set( 0, 0, 0 );
 
     // Advance the trail by one position
-    if (this.trail_initialized) this.trail_line.advance( this.position );
+    if (this.trail_initialized) this.trail_line.advance( this.position )
   };
 
   checkBounds () {
@@ -209,7 +299,6 @@ export class Boid {
   };
 
   avoid( target ){
-
     var steer = new THREE.Vector3();
 
     steer.copy( this.position );
@@ -224,7 +313,7 @@ export class Boid {
   repulse( target ) {
     var distance = this.position.distanceTo( target );
 
-    if ( distance < 150 ) {
+    if ( distance < 15 ) {
 
       var steer = new THREE.Vector3();
 
@@ -255,9 +344,8 @@ export class Boid {
 
       if ( Math.random() > 0.6 ) continue;
 
-      boid = boids[ i ];
-
-      distance = boid.position.distanceTo( this.position );
+      const boid = boids[ i ];
+      const distance = boid.position.distanceTo( this.position );
 
       if ( distance > 0 && distance <= this._neighborhoodRadius ) {
 
@@ -274,9 +362,9 @@ export class Boid {
 
       var l = velSum.length();
 
-      if ( l > _maxSteerForce ) {
+      if ( l > this._maxSteerForce ) {
 
-        velSum.divideScalar( l / _maxSteerForce );
+        velSum.divideScalar( l / this._maxSteerForce );
 
       }
 
@@ -316,9 +404,9 @@ export class Boid {
 
     var l = steer.length();
 
-    if ( l > _maxSteerForce ) {
+    if ( l > this._maxSteerForce ) {
 
-      steer.divideScalar( l / _maxSteerForce );
+      steer.divideScalar( l / this._maxSteerForce );
 
     }
 
@@ -334,7 +422,7 @@ export class Boid {
 
       if ( Math.random() > 0.6 ) continue;
 
-      boid = boids[ i ];
+      const boid = boids[ i ];
       distance = boid.position.distanceTo( this.position );
 
       if ( distance > 0 && distance <= this._neighborhoodRadius ) {

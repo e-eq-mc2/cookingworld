@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { Food }  from  './food.js'
 import { Kutiyose }  from  './kutiyose.js'
-import { Boid }  from  './boid.js'
+import { Bird, Boid }  from  './boid.js'
 const Common = require("./lib/common.js")
 
 let renderer, scene, camera, stats
@@ -14,7 +14,7 @@ let mouseY = 0
 let activeObj
 let food
 let kutiyose
-let boid
+let boids, birds 
 
 // ---------- main 
 init()
@@ -34,7 +34,7 @@ function init() {
     55,
     window.innerWidth / window.innerHeight,
     0.01, 
-    100 
+    1000 
   )
 
   scene.add(camera)
@@ -59,15 +59,25 @@ function init() {
   activeObj = food
 
 
-  boid = new Boid()
-  const birdGeo = boid.makeBirdGeometry()
-  //const birdMat = new THREE.MeshBasicMaterial( { color:Math.random() * 0xffffff, side: THREE.DoubleSide } )
-  const birdMat = new THREE.MeshLambertMaterial( { color:Math.random() * 0xffffff, side: THREE.DoubleSide } )
+	birds = [];
+	boids = [];
 
-   const mesh = new THREE.Mesh( birdGeo ,  birdMat) ;
+	for ( var i = 0; i < 100; i ++ ) {
+		const boid = boids[ i ] = new Boid();
+    boid.position.x = Math.random() * 400 - 200;
+    boid.position.y = Math.random() * 400 - 200;
+    boid.position.z = Math.random() * 400 - 200;
+    boid.velocity.x = Math.random() * 2 - 1;
+    boid.velocity.y = Math.random() * 2 - 1;
+    boid.velocity.z = Math.random() * 2 - 1;
+    boid.setAvoidWalls( true );
+    boid.setWorldSize( 300, 300, 300 );
 
-   scene.add(mesh)
+		boid.initTrail(scene)
 
+		const bird = birds[ i ] = new Bird(scene)
+		bird.phase = Math.floor( Math.random() * 62.83 );
+	}
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -115,10 +125,19 @@ function onDocumentTouchMove( event ) {
 }
 
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  const w = window.innerWidth
+  const h = window.innerHeight
 
-  renderer.setSize( window.innerWidth, window.innerHeight );
+  camera.aspect = w / h
+  camera.updateProjectionMatrix()
+
+	boids.forEach( (b) => {
+		if( b.trail_initialized ) {
+      const r = b.trail_line.updateResolution()
+    }
+	})
+
+  renderer.setSize(w, h)
 }
 
 function animate() {
@@ -135,6 +154,22 @@ function render() {
   lastUpdate = now
 
   activeObj.update(deltaT)
+
+  for ( var i = 0, il = birds.length; i < il; i++ ) {
+    const boid = boids[ i ]
+    boid.run( boids )
+
+    const bird = birds[ i ]
+    const p = boid.position
+    const v = boid.velocity
+    bird.update(p, v)
+
+    const color = bird.mesh.material.color;
+
+    if (boid.trail_initialized) boid.trail_line.setColor(color)
+  }
+
+
 
   renderer.render(scene, camera)
   stats.update()
