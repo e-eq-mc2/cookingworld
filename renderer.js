@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
+import { Spotlight }  from  './spotlight.js'
 import { Food }  from  './food.js'
 import { Kutiyose }  from  './kutiyose.js'
 import { Bird, Boid }  from  './boid.js'
@@ -12,9 +13,11 @@ let mouseX = 0
 let mouseY = 0
 
 let activeObj
-let food
-let kutiyose
+let tomato, pineapple
+let snail, ladybug, frog, god
 let boids, birds 
+
+let spotlight
 
 // ---------- main 
 init()
@@ -34,7 +37,7 @@ function init() {
     55,
     window.innerWidth / window.innerHeight,
     0.01, 
-    1000 
+    200 
   )
 
   scene.add(camera)
@@ -52,26 +55,35 @@ function init() {
   const axesHelper = new THREE.AxesHelper( 5 )
   scene.add( axesHelper )
 
-  const fnames = ["img/tomato_0.png", "img/tomato_1.png", "img/tomato_2.png"]
-  food = new Food(fnames, 10, 10, scene)
-  kutiyose = new Kutiyose("img/snail.png", 10, 10, scene)
+  spotlight = new Spotlight("img/spotlight_", 8, 8, scene)
 
-  activeObj = food
+  const height = 13
+  tomato    = new Food("img/tomato_"   , Math.floor(height * 1024/1024.0), height, scene)
+  pineapple = new Food("img/pineapple_", Math.floor(height * 540/1024.0), height, scene)
 
+  snail   = new Kutiyose("img/snail.png"  , height, height, scene)
+  frog    = new Kutiyose("img/frog.png"   , height, height, scene)
+  ladybug = new Kutiyose("img/ladybug.png", height, height, scene)
+  god     = new Kutiyose("img/god_1.png"    , height, height, scene)
+
+  activeObj = spotlight
 
 	birds = [];
 	boids = [];
 
+  const sizeX = 80
+  const sizeY = 80
+  const sizeZ = 50
 	for ( var i = 0; i < 100; i ++ ) {
 		const boid = boids[ i ] = new Boid();
-    boid.position.x = Math.random() * 400 - 200;
-    boid.position.y = Math.random() * 400 - 200;
-    boid.position.z = Math.random() * 400 - 200;
-    boid.velocity.x = Math.random() * 2 - 1;
-    boid.velocity.y = Math.random() * 2 - 1;
-    boid.velocity.z = Math.random() * 2 - 1;
+    boid.position.x = Math.random() * sizeX - sizeX * 0.5;
+    boid.position.y = Math.random() * sizeY - sizeY * 0.5;
+    boid.position.z = Math.random() * sizeZ - sizeZ * 0.5;
+    boid.velocity.x = Math.random() * 0.02 - 0.01;
+    boid.velocity.y = Math.random() * 0.02 - 0.01;
+    boid.velocity.z = Math.random() * 0.02 - 0.01;
     boid.setAvoidWalls( true );
-    boid.setWorldSize( 300, 300, 300 );
+    boid.setWorldSize( sizeX, sizeY, sizeZ );
 
 		boid.initTrail(scene)
 
@@ -86,8 +98,8 @@ function init() {
 
   const controls = new OrbitControls( camera, renderer.domElement );
   camera.position.z = 13
-  camera.position.y = 4
-  controls.target.y = 4
+  camera.position.y = 6.5
+  controls.target.y = 6.5
 
   controls.update();
 }
@@ -155,6 +167,7 @@ function render() {
 
   activeObj.update(deltaT)
 
+  const bird0 = birds[ 0 ]
   for ( var i = 0, il = birds.length; i < il; i++ ) {
     const boid = boids[ i ]
     boid.run( boids )
@@ -181,11 +194,31 @@ document.body.addEventListener("keydown", function(e) {
 
   switch(true) {
     case e.key == '0':
-      activeObj = food
+      activeObj = spotlight
       break
 
     case e.key == '1':
-      activeObj = kutiyose
+      activeObj = tomato
+      break
+
+    case e.key == '2':
+      activeObj = pineapple
+      break
+
+    case e.key == '4':
+      activeObj = snail
+      break
+
+    case e.key == '5':
+      activeObj = ladybug
+      break
+
+    case e.key == '6':
+      activeObj = frog
+      break
+
+    case e.key == '7':
+      activeObj = god
       break
 
     case e.key == ' ':

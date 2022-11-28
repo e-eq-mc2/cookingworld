@@ -8,10 +8,10 @@ export class Bird {
     const material = this.birdMaterial()
 
     this.mesh = new THREE.Mesh(geometry , material)
-    scene.add(this.mesh)
-    //this.mesh.scale.x = 0.15
-    //this.mesh.scale.y = 0.15
-    //this.mesh.scale.z = 0.15
+    //scene.add(this.mesh)
+    this.mesh.scale.x = 0.1
+    this.mesh.scale.y = 0.1
+    this.mesh.scale.z = 0.1
 
     this.phase = Math.floor( Math.random() * 62.83 )
   }
@@ -73,10 +73,13 @@ export class Bird {
 		this.phase = ( this.phase + ( Math.max( 0, this.mesh.rotation.z ) + 0.1 )  ) % 62.83
 
 		// flapping
-    const y = Math.sin( this.phase ) * 5
-		const verts   = this.mesh.geometry.getAttribute("position").array
-		verts[ 3 * 3 + 1] = y
-		verts[ 6 * 3 + 1] = y
+    const y = Math.sin( this.phase ) * 8
+		const posAttr  = this.mesh.geometry.getAttribute("position")
+    posAttr.array[ 3 * 3 + 1] = y
+    posAttr.array[ 6 * 3 + 1] = y
+
+    posAttr.needsUpdate = true
+    this.mesh.geometry.computeVertexNormals()
 	}
 
   computeNormal(a, b, c) {
@@ -99,7 +102,7 @@ export class Bird {
 
 Bird.Line = class {
   constructor(pos) {
-    const lineLength = 10
+    const lineLength = 64
     const points = []
     for (let i=0; i<lineLength; ++i) {
       points.push(pos.x)
@@ -138,7 +141,7 @@ Bird.Line = class {
       opacity: 1,
       resolution: res,
       sizeAttenuation: 1,
-      lineWidth: 0.8,
+      lineWidth: 0.1,
       depthTest: false,
       blending: THREE.AdditiveBlending,
       transparent: false,
@@ -164,11 +167,11 @@ Bird.Line = class {
 export class Boid {
   constructor() {
     this.vector = new THREE.Vector3()
-    this._width  = 500
-    this._height = 500
-    this._depth  = 200
-    this._neighborhoodRadius = 100
-    this._maxSpeed = 4
+    this._width  = 150
+    this._height = 150
+    this._depth  =  75
+    this._neighborhoodRadius = 20
+    this._maxSpeed = 0.5
     this._maxSteerForce = 0.1
     this._avoidWalls = false
     this._goal = undefined 
@@ -183,7 +186,7 @@ export class Boid {
     // Create the line mesh
     this.trail_initialized = true
     this.trail_line = new Bird.Line(this.position)
-    scene.add(this.trail_line.mesh)
+    //scene.add(this.trail_line.mesh)
 
   };
 
@@ -204,47 +207,41 @@ export class Boid {
 
   run( boids ) {
     if ( this._avoidWalls ) {
+      const scale = 1
       this.vector.set( - this._width, this.position.y, this.position.z );
       this.vector = this.avoid( this.vector );
-      this.vector.multiplyScalar( 5 );
+      this.vector.multiplyScalar( scale );
       this._acceleration.add( this.vector );
 
       this.vector.set( this._width, this.position.y, this.position.z );
       this.vector = this.avoid( this.vector );
-      this.vector.multiplyScalar( 5 );
+      this.vector.multiplyScalar( scale );
       this._acceleration.add( this.vector );
 
       this.vector.set( this.position.x, - this._height, this.position.z );
       this.vector = this.avoid( this.vector );
-      this.vector.multiplyScalar( 5 );
+      this.vector.multiplyScalar( scale );
       this._acceleration.add( this.vector );
 
       this.vector.set( this.position.x, this._height, this.position.z );
       this.vector = this.avoid( this.vector );
-      this.vector.multiplyScalar( 5 );
+      this.vector.multiplyScalar( scale );
       this._acceleration.add( this.vector );
 
       this.vector.set( this.position.x, this.position.y, - this._depth );
       this.vector = this.avoid( this.vector );
-      this.vector.multiplyScalar( 5 );
+      this.vector.multiplyScalar( scale );
       this._acceleration.add( this.vector );
 
       this.vector.set( this.position.x, this.position.y, this._depth );
       this.vector = this.avoid( this.vector );
-      this.vector.multiplyScalar( 5 );
+      this.vector.multiplyScalar( scale );
       this._acceleration.add( this.vector );
 
-    }/* else {
+    }
 
-            this.checkBounds();
-
-          }
-          */
-
-    if ( Math.random() > 0.5 ) {
-
+    if ( Math.random() > 0.60 ) {
       this.flock( boids );
-
     }
 
     const  dt = 1.0
@@ -256,13 +253,13 @@ export class Boid {
 
     if ( this._goal ) {
 
-      this._acceleration.add( this.reach( _goal, 0.005 ) );
+      //this._acceleration.add( this.reach( _goal, 0.005 ) );
 
     }
 
     this._acceleration.add( this.alignment( boids ) );
-    this._acceleration.add( this.cohesion( boids ) );
-    this._acceleration.add( this.separation( boids ) );
+    //this._acceleration.add( this.cohesion( boids ) );
+    //this._acceleration.add( this.separation( boids ) );
 
   };
 
@@ -287,17 +284,6 @@ export class Boid {
     if (this.trail_initialized) this.trail_line.advance( this.position )
   };
 
-  checkBounds () {
-
-    if ( this.position.x >   this._width ) this.position.x = - this._width;
-    if ( this.position.x < - this._width ) this.position.x =   this._width;
-    if ( this.position.y >   this._height ) this.position.y = - this._height;
-    if ( this.position.y < - this._height ) this.position.y =  this._height;
-    if ( this.position.z >  this._depth ) this.position.z = - this._depth;
-    if ( this.position.z < - this._depth ) this.position.z =  this._depth;
-
-  };
-
   avoid( target ){
     var steer = new THREE.Vector3();
 
@@ -313,7 +299,7 @@ export class Boid {
   repulse( target ) {
     var distance = this.position.distanceTo( target );
 
-    if ( distance < 15 ) {
+    if ( distance < 1 ) {
 
       var steer = new THREE.Vector3();
 
@@ -337,10 +323,11 @@ export class Boid {
   };
 
   alignment( boids ) {
-    var boid, velSum = new THREE.Vector3(),
-      count = 0;
+    const scale = 1
+    let velSum = new THREE.Vector3()
+    let count = 0
 
-    for ( var i = 0, il = boids.length; i < il; i++ ) {
+    for (let i = 0; i < boids.length; i++ ) {
 
       if ( Math.random() > 0.6 ) continue;
 
@@ -360,31 +347,27 @@ export class Boid {
 
       velSum.divideScalar( count );
 
-      var l = velSum.length();
-
-      if ( l > this._maxSteerForce ) {
-
-        velSum.divideScalar( l / this._maxSteerForce );
-
-      }
+      //var l = velSum.length();
+      //if ( l > this._maxSteerForce ) {
+      //  velSum.divideScalar( l / this._maxSteerForce );
+      //}
 
     }
 
     return velSum;
   };
 
-  cohesion ( boids ) {
-    var boid, distance,
-      posSum = new THREE.Vector3(),
-      steer = new THREE.Vector3(),
-      count = 0;
+  cohesion(boids) {
+    const scale = 0.004
+    let posSum = new THREE.Vector3()
+    let count = 0
 
     for ( var i = 0, il = boids.length; i < il; i ++ ) {
 
       if ( Math.random() > 0.6 ) continue;
 
-      boid = boids[ i ];
-      distance = boid.position.distanceTo( this.position );
+      const boid = boids[ i ];
+      const distance = boid.position.distanceTo( this.position );
 
       if ( distance > 0 && distance <= this._neighborhoodRadius ) {
 
@@ -400,15 +383,18 @@ export class Boid {
 
     }
 
+    const steer = new THREE.Vector3()
     steer.subVectors( posSum, this.position );
 
+    steer.multiplyScalar(scale)
     var l = steer.length();
 
-    if ( l > this._maxSteerForce ) {
+    //if ( l > this._maxSteerForce ) {
 
-      steer.divideScalar( l / this._maxSteerForce );
+    //  steer.divideScalar( l / this._maxSteerForce );
 
-    }
+
+    //}
 
     return steer;
   }
@@ -418,19 +404,22 @@ export class Boid {
       posSum = new THREE.Vector3(),
       repulse = new THREE.Vector3();
 
+    const  scale = 0.03
+
     for ( var i = 0, il = boids.length; i < il; i ++ ) {
 
       if ( Math.random() > 0.6 ) continue;
 
-      const boid = boids[ i ];
+      const boid = boids[ i ]
       distance = boid.position.distanceTo( this.position );
 
       if ( distance > 0 && distance <= this._neighborhoodRadius ) {
 
-        repulse.subVectors( this.position, boid.position );
-        repulse.normalize();
-        repulse.divideScalar( distance );
-        posSum.add( repulse );
+        repulse.subVectors( this.position, boid.position )
+        repulse.normalize()
+        repulse.divideScalar( distance )
+        repulse.multiplyScalar( scale )
+        posSum.add( repulse )
 
       }
 

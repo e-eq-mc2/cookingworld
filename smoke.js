@@ -33,7 +33,8 @@ export class Smoke {
     this.color = {opacity: 0}
     this.syncColor()
 
-    this.setupTween()
+    //this.setupTween()
+    this.tween = undefined
 
     this.sound0 = new Sound("sound/smoke0.mp3", scene, 0.8, 1.0)
     this.sound1 = new Sound("sound/smoke1.mp3", scene, 0.8, 1.0)
@@ -50,7 +51,6 @@ export class Smoke {
   }
 
   appear() {
-    console.log('aaaaaa')
     this.setupTween()
     this.tween.start()
     this.sound0.play()

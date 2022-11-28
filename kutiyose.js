@@ -20,8 +20,10 @@ export class Kutiyose {
     this.state = 0
     this.actions = [this.startInit, this.startAppear , this.startDisappear]
 
-    this.setupTweenIn()
-    this.setupTweenOut()
+    this.tweenIn  = undefined
+    this.tweenOut = undefined
+    //this.setupTweenIn()
+    //this.setupTweenOut()
   }
 
   setupTweenIn() {
@@ -47,7 +49,6 @@ export class Kutiyose {
         color.opacity = o.opacity 
       })
   }
-
 
   syncColor() {
     this.mesh.material.opacity = this.color.opacity

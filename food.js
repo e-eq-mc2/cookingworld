@@ -6,7 +6,7 @@ const Common   = require("./lib/common.js")
 const TO_RADIANS = Math.PI/180.0
 
 export class Food {
-  constructor(fnames, width, height, scene) {
+  constructor(fnamePrefix, width, height, scene) {
     this.BEFORE_0 = 0
     this.BEFORE_1 = 1
     this.AFTER    = 2
@@ -14,10 +14,11 @@ export class Food {
     this.ALL      = 4
 
     this.meshes = [] 
-    const geometry = this.plateGeometry(width, height, 1, 1)
+
     for (let i = 0; i < 3; i++) {
-      const fname = fnames[i]
+      const fname = `${fnamePrefix}${i}.png`
       const material = this.plateMaterial(fname)
+      const geometry = this.plateGeometry(width, height, 1, 1)
 
       const mesh = new THREE.Mesh(geometry, material)
       this.meshes.push( mesh ) 
@@ -244,7 +245,6 @@ export class Food {
 
   plateMaterial(fname) {
     const tex  = new THREE.TextureLoader().load( fname )
-
     const mat = new THREE.MeshBasicMaterial({
       map:         tex, 
       side:        THREE.FrontSide,
@@ -252,7 +252,6 @@ export class Food {
       transparent: true, //opacity: 0.5,
       //alphaTest:   0.5
     });
-
     return mat
   }
 }

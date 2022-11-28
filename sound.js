@@ -10,6 +10,7 @@ export class Sound {
 
     // create a global audio source
     const sound = new THREE.Audio( listener );
+    const state = {isReady: false}
 
     // load a sound and set it as the Audio object's buffer
     const audioLoader = new THREE.AudioLoader();
@@ -19,9 +20,11 @@ export class Sound {
       //sound.setLoop( true );
       sound.playbackRate = playbackRate
       sound.setVolume( volume );
+      state.isReady = true
     });
 
     this.sound =  sound
+    this.state = state
 
 
   }
@@ -43,6 +46,18 @@ export class Sound {
 
   play() {
     this.sound.play()
+  }
+
+  stop() {
+    this.sound.stop()
+  }
+
+  setVolume(v) {
+    this.sound.setVolume(v)
+  }
+
+  isReady() {
+    return this.state.isReady
   }
 
 }
