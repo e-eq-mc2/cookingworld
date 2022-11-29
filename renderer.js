@@ -4,6 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { Spotlight }  from  './spotlight.js'
 import { Food }  from  './food.js'
 import { Kutiyose }  from  './kutiyose.js'
+import { Slideshow }  from  './slideshow.js'
 import { Bird, Boid }  from  './boid.js'
 const Common = require("./lib/common.js")
 
@@ -15,6 +16,7 @@ let mouseY = 0
 let activeObj
 let tomato, pineapple
 let snail, ladybug, frog, god
+let slideshow
 let boids, birds 
 
 let spotlight
@@ -66,7 +68,13 @@ function init() {
   ladybug = new Kutiyose("img/ladybug.png", height, height, scene)
   god     = new Kutiyose("img/god_1.png"    , height, height, scene)
 
-  activeObj = spotlight
+  const slideHeight = 10
+  const slideWidth  = Math.floor(2 * slideHeight * (1478 / 1108))
+  slideshow = new Slideshow("img/omoide/", 4, slideWidth, slideHeight, scene)
+
+  activeObj = slideshow
+  
+  //activeObj = spotlight
 
 	birds = [];
 	boids = [];
