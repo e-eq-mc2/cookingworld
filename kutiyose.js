@@ -20,6 +20,9 @@ export class Kutiyose {
     this.state = 0
     this.actions = [this.startInit, this.startAppear , this.startDisappear]
 
+
+    this.startPos = this.mesh.position.clone()
+
     this.tweenIn  = undefined
     this.tweenOut = undefined
     //this.setupTweenIn()
@@ -61,6 +64,19 @@ export class Kutiyose {
   }
 
   startInit() {
+    this.reset()
+  }
+
+
+  reset() {
+    this.state = 0
+    this.mesh.position.copy(this.startPos) 
+    this.color.opacity = 0
+    tweenIn  = undefined 
+    tweenOut = undefined 
+
+    this.smoke.reset()
+    this.update()
   }
 
   startAppear() {
@@ -85,7 +101,7 @@ export class Kutiyose {
   }
 
   disappear() {
-    this.mesh.material.opacity = 0
+    this.color.opacity = 0
   }
 
   appear() {

@@ -178,7 +178,7 @@ export class Food {
       pos.y = 0
     }
 
-    if ( pos.y < 0.05 && this.velocity.y > 0 && this.velocity.y < 3.0 ) {
+    if ( pos.y < 0.08 && this.velocity.y > 0 && this.velocity.y < 4.0 ) {
       this.velocity.y = 0
       pos.y = 0
     }
@@ -217,7 +217,7 @@ export class Food {
   }
 
   updateFin(dt) {
-    const vx = 1.5
+    const vx = 2
     const dx = vx * dt
     this.moveX( dx )
   }
@@ -240,7 +240,7 @@ export class Food {
 
     rot.z += dr
     pos.x += dx
-    pos.y += dy
+    //pos.y += dy
   }
 
   normalDistribution(x, sd,mean) {

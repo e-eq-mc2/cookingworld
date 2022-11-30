@@ -62,6 +62,13 @@ export class Smoke {
     this.sound1.play()
   }
 
+  reset() {
+    this.state = 0
+    this.color.opacity = 0
+    this.tween = undefined
+    this.update()
+  }
+
   update(dt) {
     if ( this.tween && this.tween.isPlaying() ) this.tween.update()
     this.rotate(dt)

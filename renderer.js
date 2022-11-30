@@ -13,13 +13,13 @@ let renderer, scene, camera, stats
 let mouseX = 0
 let mouseY = 0
 
-let activeObj
 let tomato, broccoli
-let snail, ladybug, frog, god
+let snail, butterfly0, butterfly1, frog, god
 let slideshow
 let boids, birds 
 
-let performers = []
+let currentPerformer = 0
+let performers       = []
 
 let spotlight
 
@@ -104,17 +104,31 @@ function initPerformers() {
   tomato   = new Food("img/tomato_"   , Math.floor(height * 1024/1024), height, scene)
   broccoli = new Food("img/broccoli_" , Math.floor(height * 1250/1024), height, scene)
 
-  snail   = new Kutiyose("img/snail.png"  , height, height, scene)
-  ladybug = new Kutiyose("img/ladybug.png", height, height, scene)
-  god     = new Kutiyose("img/god_1.png"  , height, height, scene)
-  frog    = new Kutiyose("img/frog.png"   , height, height, scene)
+  snail      = new Kutiyose("img/snail.png"      , Math.floor(height * 1024/1024), height, scene)
+  butterfly0 = new Kutiyose("img/butterfly_0.png", Math.floor(height * 1024/1024), height, scene)
+  butterfly1 = new Kutiyose("img/butterfly_1.png", Math.floor(height * 1024/1024), height, scene)
+  god        = new Kutiyose("img/god_1.png"      , Math.floor(height * 1024/1024), height, scene)
+  frog       = new Kutiyose("img/frog.png"       , Math.floor(height * 1024/1024), height, scene)
 
   slideshow = new Slideshow("img/omoide/", 4, Math.floor(height * (1478/1108)), height, scene)
 
-  activeObj = spotlight
+  // ---- Order ----
+  performers.push(spotlight)  // 0
+  performers.push(tomato )    // 1
+  performers.push(broccoli)   // 2
+  performers.push(snail)      // 3
+  performers.push(butterfly0) // 4 
+  performers.push(butterfly1) // 5
+  performers.push(god)        // 6
+  performers.push(frog)       // 7
+  performers.push(slideshow)  // 8
+
+  currentPerformer = 0
 }
 
-
+function activeObj() {
+  return performers[currentPerformer]
+}
 
 function onDocumentMouseMove( event ) {
 
@@ -177,7 +191,7 @@ function render() {
   }
   lastUpdate = now
 
-  activeObj.update(deltaT)
+  activeObj().update(deltaT)
 
   const bird0 = birds[ 0 ]
   for ( var i = 0, il = birds.length; i < il; i++ ) {
@@ -206,47 +220,63 @@ document.body.addEventListener("keydown", function(e) {
 
   switch(true) {
     case e.key == '0':
-      activeObj = spotlight
+      currentPerformer = 0
       break
-
     case e.key == '1':
-      activeObj = tomato
+      currentPerformer = 1
       break
-
     case e.key == '2':
-      activeObj = broccoli
+      currentPerformer = 2
       break
-
+    case e.key == '3':
+      currentPerformer = 3
+      break
     case e.key == '4':
-      activeObj = snail
+      currentPerformer = 4
       break
-
     case e.key == '5':
-      activeObj = ladybug
+      currentPerformer = 5
       break
-
-    case e.key == '7':
-      activeObj = frog
-      break
-
     case e.key == '6':
-      activeObj = god
+      currentPerformer = 6
+      break
+    case e.key == '7':
+      currentPerformer = 7
+      break
+    case e.key == '8':
+      currentPerformer = 8
+      break
+    case e.key == '9':
+      currentPerformer = 9
       break
 
-    case e.key == '9':
-      activeObj = slideshow
+
+
+
+
+
+    case e.key == 'l':
+      spotlight.appear()
+      break
+
+    case e.key == 'Enter':
+      currentPerformer = Math.min(currentPerformer + 1, performers.length -1)
+      break
+
+    case e.key == 'b':
+      currentPerformer = Math.max(currentPerformer - 1, 0)
       break
 
     case e.key == ' ':
-      activeObj.next()
+      activeObj().next()
       break
 
     case e.key == 'ArrowLeft':
-      activeObj.moveLeft()
+      activeObj().moveLeft()
       break
 
     case e.key == 'ArrowRight':
-      activeObj.moveRight()
+      activeObj().moveRight()
       break
 
     default:

@@ -31,6 +31,13 @@ export class Spotlight {
     this.meshes[this.LEFT ].position.x = this.LeftX
     this.meshes[this.RIGHT].position.x = this.RightX
 
+
+    this.startPos = [] 
+    for (let i = 0; i < this.ALL; i++) {
+      const m = this.meshes[i]
+      this.startPos.push( m.position.clone() )
+    }
+
     const a = new THREE.Group()
     a.add( this.meshes[this.CENTER] )
     a.add( this.meshes[this.LEFT  ] )
@@ -39,15 +46,26 @@ export class Spotlight {
     scene.add( a )
 
     this.state = 0
-    this.actions = [this.startInit, this.startCenter, this.startEnds, this.startFin]
+    this.actions = [this.startInit, this.startCenter, this.startEnds, this.startFin, this.disappear]
 
     this.sound = new Sound("sound/fight.mp3", scene, 0.7, 1.0)
 
     this.colors = [{opacity: 0}, {opacity: 0}, {opacity: 0}] 
     this.syncColor()
 
-    this.tweenIn  = new Array(this.ALL + 1)
-    this.tweenOut = new Array(this.ALL + 1)
+    this.tweenIn  = new Array(this.ALL)
+    this.tweenOut = new Array(this.ALL)
+  }
+
+  reset() {
+    this.state = 0
+    this.tweenIn  = new Array(this.ALL)
+    this.tweenOut = new Array(this.ALL)
+
+    for (let i = 0; i < this.ALL; i++) {
+      const m = this.meshes[i]
+      m.position.copy( this.startPos[i] )
+    }
   }
 
   createTweenIn(color) {
@@ -95,19 +113,23 @@ export class Spotlight {
   }
 
   startFin() {
-    //this.startTweenOut(this.LEFT)
-    //this.startTweenOut(this.RIGHT)
   }
 
   disappear() {
-    for (let i = 0; i < this.ALL; ++i ) {
-      this.meshes[i].material.opacity = 0
+    for (let i=0; i<this.colors.length; ++i ) {
+      const c = this.colors[i]
+      c.opacity = 0
     }
+    this.update()
   }
 
   appear() {
-    this.meshes[this.LEFT ].material.opacity = 1
-    this.meshes[this.RIGHT].material.opacity = 1
+    for (let i=0; i<this.colors.length; ++i ) {
+      if ( i == this.CENTER ) continue
+      const c = this.colors[i]
+      c.opacity = 1
+    }
+    this.update()
   }
 
   startTweenIn(i) {
@@ -120,7 +142,7 @@ export class Spotlight {
     this.tweenOut[i].start()
   }
 
-  update(dt){
+  update(dt = 0.003){
     for (let i = 0; i < this.ALL; ++i ) {
       const ti = this.tweenIn [i]
       const to = this.tweenOut[i]

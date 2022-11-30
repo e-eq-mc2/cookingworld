@@ -34,6 +34,15 @@ export class Slideshow {
     this.isFirstTime = true
   }
 
+  reset() {
+    this.current = -1
+    this.tween = undefined
+    this.color  = {opacity: 0}
+    this.isFirstTime = true
+    this.smoke.reset()
+    this.update()
+  }
+
   createTween(color) {
     const tween = new TWEEN.Tween({opacity: 0})
     tween
