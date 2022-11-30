@@ -91,11 +91,15 @@ export class Smoke {
   plateMaterial(fname) {
     const tex  = new THREE.TextureLoader().load( fname )
 
+    //const color = new THREE.Color( 0xffffff * Common.randomReal() )
+
     const mat = new THREE.MeshBasicMaterial({
       map:         tex, 
+      //color:  color,
       //side:        THREE.FrontSide,
       //depthWrite:  true,
       transparent: true, //opacity: 0.5,
+      //blending: THREE.AdditiveBlending, 
       //alphaTest:   0.5
     });
 

@@ -14,10 +14,12 @@ let mouseX = 0
 let mouseY = 0
 
 let activeObj
-let tomato, pineapple
+let tomato, broccoli
 let snail, ladybug, frog, god
 let slideshow
 let boids, birds 
+
+let performers = []
 
 let spotlight
 
@@ -54,27 +56,10 @@ function init() {
   // シーンに追加
   scene.add(directionalLight)
 
+  initPerformers()
+
   const axesHelper = new THREE.AxesHelper( 5 )
   scene.add( axesHelper )
-
-  spotlight = new Spotlight("img/spotlight_", 8, 8, scene)
-
-  const height = 13
-  tomato    = new Food("img/tomato_"   , Math.floor(height * 1024/1024.0), height, scene)
-  pineapple = new Food("img/pineapple_", Math.floor(height * 540/1024.0), height, scene)
-
-  snail   = new Kutiyose("img/snail.png"  , height, height, scene)
-  frog    = new Kutiyose("img/frog.png"   , height, height, scene)
-  ladybug = new Kutiyose("img/ladybug.png", height, height, scene)
-  god     = new Kutiyose("img/god_1.png"    , height, height, scene)
-
-  const slideHeight = 10
-  const slideWidth  = Math.floor(2 * slideHeight * (1478 / 1108))
-  slideshow = new Slideshow("img/omoide/", 4, slideWidth, slideHeight, scene)
-
-  activeObj = slideshow
-  
-  //activeObj = spotlight
 
 	birds = [];
 	boids = [];
@@ -111,6 +96,25 @@ function init() {
 
   controls.update();
 }
+
+function initPerformers() {
+  spotlight = new Spotlight("img/spotlight_", 8, 8, scene)
+
+  const height = 13
+  tomato   = new Food("img/tomato_"   , Math.floor(height * 1024/1024), height, scene)
+  broccoli = new Food("img/broccoli_" , Math.floor(height * 1250/1024), height, scene)
+
+  snail   = new Kutiyose("img/snail.png"  , height, height, scene)
+  ladybug = new Kutiyose("img/ladybug.png", height, height, scene)
+  god     = new Kutiyose("img/god_1.png"  , height, height, scene)
+  frog    = new Kutiyose("img/frog.png"   , height, height, scene)
+
+  slideshow = new Slideshow("img/omoide/", 4, Math.floor(height * (1478/1108)), height, scene)
+
+  activeObj = spotlight
+}
+
+
 
 function onDocumentMouseMove( event ) {
 
@@ -210,7 +214,7 @@ document.body.addEventListener("keydown", function(e) {
       break
 
     case e.key == '2':
-      activeObj = pineapple
+      activeObj = broccoli
       break
 
     case e.key == '4':
@@ -221,12 +225,16 @@ document.body.addEventListener("keydown", function(e) {
       activeObj = ladybug
       break
 
-    case e.key == '6':
+    case e.key == '7':
       activeObj = frog
       break
 
-    case e.key == '7':
+    case e.key == '6':
       activeObj = god
+      break
+
+    case e.key == '9':
+      activeObj = slideshow
       break
 
     case e.key == ' ':

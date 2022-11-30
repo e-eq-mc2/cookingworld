@@ -99,6 +99,17 @@ export class Spotlight {
     //this.startTweenOut(this.RIGHT)
   }
 
+  disappear() {
+    for (let i = 0; i < this.ALL; ++i ) {
+      this.meshes[i].material.opacity = 0
+    }
+  }
+
+  appear() {
+    this.meshes[this.LEFT ].material.opacity = 1
+    this.meshes[this.RIGHT].material.opacity = 1
+  }
+
   startTweenIn(i) {
     this.tweenIn[i] = this.createTweenIn(this.colors[i])
     this.tweenIn[i].start()
@@ -108,7 +119,6 @@ export class Spotlight {
     this.tweenOut[i] = this.createTweenOut(this.colors[i])
     this.tweenOut[i].start()
   }
-
 
   update(dt){
     for (let i = 0; i < this.ALL; ++i ) {

@@ -91,6 +91,18 @@ export class Food {
     this.meshes[this.BEFORE_1].material.opacity = 0
   }
 
+  disappear() {
+    for (let i = 0; i < this.ALL + 1; i++) {
+      this.meshes[i].material.opacity = 0
+    }
+  }
+
+ appear() {
+    for (let i = 0; i < this.ALL + 1; i++) {
+      this.meshes[i].material.opacity = 1
+    }
+  }
+
   startInit() {
     this.reset()
   }

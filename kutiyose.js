@@ -84,6 +84,14 @@ export class Kutiyose {
     this.syncColor()
   }
 
+  disappear() {
+    this.mesh.material.opacity = 0
+  }
+
+  appear() {
+    this.mesh.material.opacity = 1
+  }
+
   moveLeft(dx = -0.05) {
     const m = this.mesh
     m.position.x += dx
@@ -100,7 +108,7 @@ export class Kutiyose {
   }
 
   plateMaterial(fname) {
-    const tex  = new THREE.TextureLoader().load( fname )
+    const tex  = new THREE.TextureLoader().load(fname)
 
     const mat = new THREE.MeshBasicMaterial({
       map:         tex, 
