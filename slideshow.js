@@ -22,7 +22,6 @@ export class Slideshow {
       const page = new Slideshow.Page(fnames, width, height, scene)
       this.pages.push(page)
     }
-
     this.current = -1
 
     this.tween  = undefined
@@ -38,7 +37,13 @@ export class Slideshow {
     this.current = -1
     this.tween = undefined
     this.color  = {opacity: 0}
-    this.isFirstTime = true
+
+    for(let i=0; i<this.pages.length; ++i) {
+      const p = this.pages[i]
+      p.setOpacity(0)
+    }
+
+    //this.isFirstTime = true
     this.smoke.reset()
     this.update()
   }
@@ -55,7 +60,13 @@ export class Slideshow {
   }
 
   next() {
-    this.current = (this.current + 1) % this.pages.length
+    this.current = this.current + 1
+
+    if ( this.current == this.pages.length ) {
+      this.reset()
+      return
+    }
+
     if ( this.current == 0 && this.isFirstTime ) {
       this.smoke.appear() 
       this.isFirstTime = false

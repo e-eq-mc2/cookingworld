@@ -16,7 +16,9 @@ let mouseY = 0
 let tomato, broccoli
 let snail, butterfly0, butterfly1, frog, god
 let slideshow
-let boids, birds 
+
+let boid
+
 
 let currentPerformer = 0
 let performers       = []
@@ -61,28 +63,6 @@ function init() {
   const axesHelper = new THREE.AxesHelper( 5 )
   scene.add( axesHelper )
 
-	birds = [];
-	boids = [];
-
-  const sizeX = 80
-  const sizeY = 80
-  const sizeZ = 50
-	for ( var i = 0; i < 100; i ++ ) {
-		const boid = boids[ i ] = new Boid();
-    boid.position.x = Math.random() * sizeX - sizeX * 0.5;
-    boid.position.y = Math.random() * sizeY - sizeY * 0.5;
-    boid.position.z = Math.random() * sizeZ - sizeZ * 0.5;
-    boid.velocity.x = Math.random() * 0.02 - 0.01;
-    boid.velocity.y = Math.random() * 0.02 - 0.01;
-    boid.velocity.z = Math.random() * 0.02 - 0.01;
-    boid.setAvoidWalls( true );
-    boid.setWorldSize( sizeX, sizeY, sizeZ );
-
-		boid.initTrail(scene)
-
-		const bird = birds[ i ] = new Bird(scene)
-		bird.phase = Math.floor( Math.random() * 62.83 );
-	}
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -104,13 +84,15 @@ function initPerformers() {
   tomato   = new Food("img/tomato_"   , Math.floor(height * 1024/1024), height, scene)
   broccoli = new Food("img/broccoli_" , Math.floor(height * 1250/1024), height, scene)
 
-  snail      = new Kutiyose("img/snail.png"      , Math.floor(height * 1024/1024), height, scene)
+  snail      = new Kutiyose("img/snail.png"      , Math.floor(12     * 2020/1024),     12, scene)
   butterfly0 = new Kutiyose("img/butterfly_0.png", Math.floor(height * 1024/1024), height, scene)
   butterfly1 = new Kutiyose("img/butterfly_1.png", Math.floor(height * 1024/1024), height, scene)
   god        = new Kutiyose("img/god_1.png"      , Math.floor(height * 1024/1024), height, scene)
-  frog       = new Kutiyose("img/frog.png"       , Math.floor(height * 1024/1024), height, scene)
+  frog       = new Kutiyose("img/frog.png"       , Math.floor(height * 1338/1024), height, scene)
 
   slideshow = new Slideshow("img/omoide/", 4, Math.floor(height * (1478/1108)), height, scene)
+
+  boid = new Boid(scene)
 
   // ---- Order ----
   performers.push(spotlight)  // 0
@@ -122,6 +104,7 @@ function initPerformers() {
   performers.push(god)        // 6
   performers.push(frog)       // 7
   performers.push(slideshow)  // 8
+  performers.push(boid)       // 9
 
   currentPerformer = 0
 }
@@ -142,8 +125,8 @@ function onDocumentTouchStart( event ) {
 
     event.preventDefault();
 
-    const windowHalfX   = window.innerWidth / 2
-    const windowHalfY   = window.innerHeight / 2
+    const windowHalfX = window.innerWidth / 2
+    const windowHalfY = window.innerHeight / 2
     mouseX = event.touches[ 0 ].pageX - windowHalfX;
     mouseY = event.touches[ 0 ].pageY - windowHalfY;
   }
@@ -155,8 +138,8 @@ function onDocumentTouchMove( event ) {
 
     event.preventDefault();
 
-    const windowHalfX   = window.innerWidth / 2
-    const windowHalfY   = window.innerHeight / 2
+    const windowHalfX = window.innerWidth / 2
+    const windowHalfY = window.innerHeight / 2
     mouseX = event.touches[ 0 ].pageX - windowHalfX;
     mouseY = event.touches[ 0 ].pageY - windowHalfY;
   }
@@ -169,11 +152,7 @@ function onWindowResize() {
   camera.aspect = w / h
   camera.updateProjectionMatrix()
 
-	boids.forEach( (b) => {
-		if( b.trail_initialized ) {
-      const r = b.trail_line.updateResolution()
-    }
-	})
+	boid.updateResolution()
 
   renderer.setSize(w, h)
 }
@@ -193,22 +172,7 @@ function render() {
 
   activeObj().update(deltaT)
 
-  const bird0 = birds[ 0 ]
-  for ( var i = 0, il = birds.length; i < il; i++ ) {
-    const boid = boids[ i ]
-    boid.run( boids )
-
-    const bird = birds[ i ]
-    const p = boid.position
-    const v = boid.velocity
-    bird.update(p, v)
-
-    const color = bird.mesh.material.color;
-
-    if (boid.trail_initialized) boid.trail_line.setColor(color)
-  }
-
-
+  boid.update(deltaT)
 
   renderer.render(scene, camera)
   stats.update()
@@ -250,13 +214,12 @@ document.body.addEventListener("keydown", function(e) {
       currentPerformer = 9
       break
 
-
-
-
-
-
     case e.key == 'l':
       spotlight.appear()
+      break
+
+    case e.key == 'L':
+      spotlight.disappear()
       break
 
     case e.key == 'Enter':
