@@ -8,9 +8,11 @@ export class Kutiyose {
     const geometry = this.plateGeometry(width, height, 1, 1)
     const material = this.plateMaterial(fname)
 
+    this.scene = scene
+
     this.mesh = new THREE.Mesh(geometry, material)
     this.mesh.translateY(height / 2.0)
-    scene.add( this.mesh )
+    //scene.add( this.mesh )
 
     this.smoke = new Smoke("img/smoke.png", width, height, scene)
 
@@ -18,7 +20,8 @@ export class Kutiyose {
     this.syncColor()
 
     this.state = 0
-    this.actions = [this.startInit, this.startAppear , this.startDisappear]
+    this.actions = [this.startInit, this.startAppear , this.startDisappear, this.startFin]
+    this.finished = false
 
 
     this.startPos = this.mesh.position.clone()
@@ -29,28 +32,43 @@ export class Kutiyose {
     //this.setupTweenOut()
   }
 
+  isCleaned() {
+    const m = this.mesh
+    const o = this.scene.getObjectByProperty("uuid", m.uuid)
+    return o && this.smoke.isCleaned() ? false : true
+  }
+
+  isFinished() {
+    return this.finished
+  }
+
   setupTweenIn() {
     const color = this.color 
+    const mesh  = this.mesh
+    const scene = this.scene
 
     this.tweenIn = new TWEEN.Tween({opacity: 0})
     this.tweenIn
       .to({opacity: [0.1, 0.1, 0.2, 1]}, 2000)
       .easing(TWEEN.Easing.Linear.None)
-			.onUpdate((o) => { 
+			.onUpdate( o  => { 
         color.opacity = o.opacity 
       })
+			.onStart( o  => { console.log("kutiyose started"); scene.add(mesh) }) 
   }
 
   setupTweenOut() {
     const color = this.color 
 
+    const mesh  = this.mesh
+    const scene = this.scene
+
     this.tweenOut = new TWEEN.Tween({opacity: 1})
     this.tweenOut
       .to({opacity: [0.4, 0.1, 0]}, 2000)
       .easing(TWEEN.Easing.Linear.None)
-			.onUpdate((o) => { 
-        color.opacity = o.opacity 
-      })
+			.onUpdate( o => { color.opacity = o.opacity })
+			.onComplete( o => { console.log("kutiyose completed"); scene.remove(mesh) }) 
   }
 
   syncColor() {
@@ -64,22 +82,26 @@ export class Kutiyose {
   }
 
   startInit() {
-    this.reset()
-  }
-
-
-  reset() {
     this.state = 0
     this.mesh.position.copy(this.startPos) 
     this.color.opacity = 0
-    tweenIn  = undefined 
-    tweenOut = undefined 
+    this.tweenIn  = undefined 
+    this.tweenOut = undefined 
+    this.finished = false
+    this.scene.remove(this.mesh)
 
-    this.smoke.reset()
-    this.update()
+    this.smoke.startInit()
+    this.syncColor()
+  }
+
+  startFin() {
+    this.scene.remove(this.mesh)
+    this.smoke.startFin()
+    this.finished = true
   }
 
   startAppear() {
+    this.scene.add(this.mesh)
     this.smoke.appear()
 
     this.setupTweenIn()

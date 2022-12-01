@@ -31,7 +31,6 @@ export class Spotlight {
     this.meshes[this.LEFT ].position.x = this.LeftX
     this.meshes[this.RIGHT].position.x = this.RightX
 
-
     this.startPos = [] 
     for (let i = 0; i < this.ALL; i++) {
       const m = this.meshes[i]
@@ -43,10 +42,11 @@ export class Spotlight {
     a.add( this.meshes[this.LEFT  ] )
     a.add( this.meshes[this.RIGHT ] )
     this.meshes.push(a)
-    scene.add( a )
+    this.scene = scene
 
     this.state = 0
     this.actions = [this.startInit, this.startCenter, this.startEnds, this.startFin, this.disappear]
+    this.finished = false
 
     this.sound = new Sound("sound/fight.mp3", scene, 0.7, 1.0)
 
@@ -55,17 +55,8 @@ export class Spotlight {
 
     this.tweenIn  = new Array(this.ALL)
     this.tweenOut = new Array(this.ALL)
-  }
 
-  reset() {
-    this.state = 0
-    this.tweenIn  = new Array(this.ALL)
-    this.tweenOut = new Array(this.ALL)
-
-    for (let i = 0; i < this.ALL; i++) {
-      const m = this.meshes[i]
-      m.position.copy( this.startPos[i] )
-    }
+    this.scene.add(this.meshes[this.ALL])
   }
 
   createTweenIn(color) {
@@ -91,28 +82,57 @@ export class Spotlight {
   }
 
   next() {
+    if ( this.state == 2 && ! this.isCenterFinished() ) return
+
     this.state += 1 
     if ( this.state >= this.actions.length ) this.state = 0
     this.actions[this.state].call(this)
   }
 
-  startInit() {
+  isCenterFinished() {
+    const c = this.colors[this.CENTER]
+    return c.opacity == 0
   }
 
+  isCleaned() {
+    return true
+  }
+
+  isFinished() {
+    return this.finished && this.isCenterFinished()
+  }
+
+  startInit() {
+    this.state = 0
+    this.tweenIn  = new Array(this.ALL)
+    this.tweenOut = new Array(this.ALL)
+    this.finished = false
+    //this.scene.remove(this.meshes[this.ALL])
+
+    for (let i = 0; i < this.ALL; i++) {
+      const m = this.meshes[i]
+      m.position.copy( this.startPos[i] )
+    }
+  }
 
   startCenter() {
+    //this.scene.add(this.meshes[this.ALL])
+    this.finished = false
     this.startTweenIn(this.CENTER)
     this.sound.play()
   }
 
   startEnds() {
     //this.sound.stop()
+    this.finished = true
     this.startTweenOut(this.CENTER)
     this.startTweenIn(this.LEFT)
     this.startTweenIn(this.RIGHT)
   }
 
   startFin() {
+    this.finished = true
+    this.sound.stop()
   }
 
   disappear() {
@@ -120,6 +140,7 @@ export class Spotlight {
       const c = this.colors[i]
       c.opacity = 0
     }
+    this.sound.stop()
     this.update()
   }
 

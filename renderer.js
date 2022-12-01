@@ -67,7 +67,7 @@ function init() {
   window.addEventListener( 'resize', onWindowResize )
 
   stats = new Stats();
-  //document.body.appendChild( stats.dom );
+  document.body.appendChild( stats.dom );
 
   const controls = new OrbitControls( camera, renderer.domElement );
   camera.position.z = 13
@@ -83,6 +83,10 @@ function initPerformers() {
   const height = 13
   tomato   = new Food("img/tomato_"   , Math.floor(height * 1024/1024), height, scene)
   broccoli = new Food("img/broccoli_" , Math.floor(height * 1250/1024), height, scene)
+  //pumpkin  = new Food("img/pumpkin_"  , Math.floor(height * 1250/1024), height, scene)
+
+  broccoli.exitType = 1
+  //pumpkin.exitType = 1
 
   snail      = new Kutiyose("img/snail.png"      , Math.floor(12     * 2020/1024),     12, scene)
   butterfly0 = new Kutiyose("img/butterfly_0.png", Math.floor(height * 1024/1024), height, scene)
@@ -98,13 +102,14 @@ function initPerformers() {
   performers.push(spotlight)  // 0
   performers.push(tomato )    // 1
   performers.push(broccoli)   // 2
-  performers.push(snail)      // 3
-  performers.push(butterfly0) // 4 
-  performers.push(butterfly1) // 5
-  performers.push(god)        // 6
-  performers.push(frog)       // 7
-  performers.push(slideshow)  // 8
-  performers.push(boid)       // 9
+  //performers.push(pumpkin)    // 3
+  performers.push(snail)      // 4
+  performers.push(butterfly0) // 5 
+  performers.push(butterfly1) // 6
+  performers.push(god)        // 7
+  performers.push(frog)       // 8
+  performers.push(slideshow)  // 9
+  performers.push(boid)       // a
 
   currentPerformer = 0
 }
@@ -172,8 +177,6 @@ function render() {
 
   activeObj().update(deltaT)
 
-  boid.update(deltaT)
-
   renderer.render(scene, camera)
   stats.update()
 }
@@ -184,33 +187,43 @@ document.body.addEventListener("keydown", function(e) {
 
   switch(true) {
     case e.key == '0':
+      activeObj().startInit()
       currentPerformer = 0
       break
     case e.key == '1':
+      activeObj().startInit()
       currentPerformer = 1
       break
     case e.key == '2':
+      activeObj().startInit()
       currentPerformer = 2
       break
     case e.key == '3':
+      activeObj().startInit()
       currentPerformer = 3
       break
     case e.key == '4':
+      activeObj().startInit()
       currentPerformer = 4
       break
     case e.key == '5':
+      activeObj().startInit()
       currentPerformer = 5
       break
     case e.key == '6':
+      activeObj().startInit()
       currentPerformer = 6
       break
     case e.key == '7':
+      activeObj().startInit()
       currentPerformer = 7
       break
     case e.key == '8':
+      activeObj().startInit()
       currentPerformer = 8
       break
     case e.key == '9':
+      activeObj().startInit()
       currentPerformer = 9
       break
 
@@ -223,14 +236,21 @@ document.body.addEventListener("keydown", function(e) {
       break
 
     case e.key == 'Enter':
-      currentPerformer = Math.min(currentPerformer + 1, performers.length -1)
-      break
+      //{
+      //  if ( activeObj().isCleaned() ) {
+      //    currentPerformer = Math.min(currentPerformer + 1, performers.length -1)
+      //  }
+      //  break
+      //}
 
     case e.key == 'b':
       currentPerformer = Math.max(currentPerformer - 1, 0)
       break
 
     case e.key == ' ':
+      if ( activeObj().isFinished() )  {
+          currentPerformer = Math.min(currentPerformer + 1, performers.length -1)
+      }
       activeObj().next()
       break
 

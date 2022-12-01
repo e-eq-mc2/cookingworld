@@ -13,6 +13,8 @@ export class Food {
     this.BEFORE   = 3
     this.ALL      = 4
 
+    this.scene = scene
+
     this.meshes = [] 
 
     for (let i = 0; i < 3; i++) {
@@ -36,7 +38,7 @@ export class Food {
     a.add( this.meshes[this.AFTER ] )
     this.meshes.push( a )
 
-    scene.add( this.meshes[this.ALL] )
+    //this.scene.add( this.meshes[this.ALL] )
     this.meshes[this.ALL].position.y = 20
 
     this.startPos = [] 
@@ -49,17 +51,21 @@ export class Food {
     this.meshes[this.BEFORE_1].material.opacity = 0
 
     this.state = 0
-    this.actions = [this.startInit, this.startDropping, this.startCutting, this.startFin]
+    this.actions = [this.startInit, this.startDropping, this.startCutting, this.startExit, this.startFin]
     this.waitTime      = 0 
     this.waitPeriod    = 2
     this.cuttingTime   = 0
     this.cuttingPeriod = 5
     this.fallingTime   = 0
+    this.finished = false
+    this.exitType = 0
 
-    this.length = ((width + height) / 2) * 0.5
+    this.diameter = Math.sqrt(width*width + height*height)
 
     this.setupPhisics()
     this.sound = new Sound("sound/cut.mp3", scene, 0.7, 1.0)
+
+    this.vibrationDir = 1
   }
 
   setupPhisics() {
@@ -68,27 +74,35 @@ export class Food {
     this.energyLoss = 0.7
   }
 
+  isCleaned() {
+    const m = this.meshes[this.ALL]
+    const o = this.scene.getObjectByProperty("uuid", m.uuid)
+    return o ? false : true
+  }
+
+  isFinished() {
+    return this.finished
+  }
+
+  isDropFinished() {
+    const m = this.meshes[this.ALL]
+    const pos = m.position
+    return pos.y  < 0.08 && this.gravity.y == 0
+  }
+
+  isCutFinished() {
+    const m = this.meshes[this.BEFORE]
+    const pos = m.position
+    return pos.y < -10
+  }
+
   next() {
+    if ( this.state == 1 && ! this.isDropFinished() ) return
+    if ( this.state == 2 && ! this.isCutFinished()  ) return
+
     this.state += 1 
     if ( this.state >= this.actions.length ) this.state = 0
     this.actions[this.state].call(this)
-  }
-
-  reset() {
-    this.state = 0
-    this.waitTime    = 0
-    this.cuttingTime = 0
-    this.fallingTime = 0
-
-    this.velocity.set(0, 0, 0)
-
-    for (let i = 0; i < this.ALL + 1; i++) {
-      const m = this.meshes[i]
-      m.position.copy( this.startPos[i] )
-      m.rotation.copy( this.startRot[i] )
-    }
-
-    this.meshes[this.BEFORE_1].material.opacity = 0
   }
 
   disappear() {
@@ -104,12 +118,34 @@ export class Food {
   }
 
   startInit() {
-    this.reset()
+    this.state = 0
+    this.waitTime    = 0
+    this.cuttingTime = 0
+    this.fallingTime = 0
+    this.finished = false
+    this.scene.remove( this.meshes[this.ALL] )
+
+    this.velocity.set(0, 0, 0)
+
+    for (let i = 0; i < this.ALL + 1; i++) {
+      const m = this.meshes[i]
+      m.position.copy( this.startPos[i] )
+      m.rotation.copy( this.startRot[i] )
+    }
+
+    this.meshes[this.BEFORE_1].material.opacity = 0
+  }
+
+  startFin() {
+    this.scene.remove( this.meshes[this.ALL] )
+    this.finished = true
   }
 
   startDropping() {
-    this.velocity.set(0, -10.0, 0)
-    this.gravity.set(0, -0.7, 0)
+    this.scene.add( this.meshes[this.ALL] )
+
+    this.velocity.set(0, -8.0, 0)
+    this.gravity .set(0, -0.7, 0)
   }
 
   startCutting() {
@@ -124,7 +160,7 @@ export class Food {
     this.meshes[this.BEFORE_1].material.opacity = 1
   }
 
-  startFin() {
+  startExit() {
     this.gravity.set(0, 0, 0)
     this.velocity.set(0, 0, 0)
   }
@@ -153,7 +189,7 @@ export class Food {
         this.updateFall(dt)
         break
       case 3:
-        this.updateFin(dt)
+        this.updateExit(dt)
         break
 
       default: 
@@ -179,6 +215,7 @@ export class Food {
     }
 
     if ( pos.y < 0.08 && this.velocity.y > 0 && this.velocity.y < 4.0 ) {
+      this.gravity.y  = 0
       this.velocity.y = 0
       pos.y = 0
     }
@@ -216,8 +253,22 @@ export class Food {
     rot.z = rz
   }
 
-  updateFin(dt) {
+  updateExit(dt) {
+    if ( this.exitType == 0 ) {
+      this.updateExit0( dt ) 
+    } else {
+      this.updateExit1( dt ) 
+    }
+  }
+
+  updateExit0(dt) {
     const vx = 2
+    const dx = vx * dt
+    this.moveXwithRotation( dx ) 
+  }
+
+  updateExit1(dt) {
+    const vx = 1
     const dx = vx * dt
     this.moveX( dx )
   }
@@ -231,14 +282,29 @@ export class Food {
   }
 
   moveX(dx) {
+    const maxRotate = 1 / 180   * Math.PI
     const m   = this.meshes[this.AFTER]
     const pos = m.position
     const rot = m.rotation
 
-    const dr = - dx / this.length
+    const dr = dx / (this.diameter ) * 2 // ( (dx/(d*pi)*360) /   360 ) * (2*pi)
     const dy = - Math.abs(dx) * 0.3 
 
-    rot.z += dr
+    rot.z += dr * this.vibrationDir
+    pos.x += dx
+    //pos.y += dy
+    if ( Math.abs(rot.z) > maxRotate ) this.vibrationDir *= -1
+  }
+
+  moveXwithRotation(dx) {
+    const m   = this.meshes[this.AFTER]
+    const pos = m.position
+    const rot = m.rotation
+
+    const dr = - dx / (this.diameter ) * 2 // ( (dx/(d*pi)*360) /   360 ) * (2*pi)
+    const dy = - Math.abs(dx) * 0.3 
+
+    rot.z += dr 
     pos.x += dx
     //pos.y += dy
   }

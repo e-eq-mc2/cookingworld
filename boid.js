@@ -26,10 +26,10 @@ export class Boid {
 
     const num               = 0
     this.width              = 20
-    this.height             = 30
+    this.height             = 20
     this.depth              = 20
     this.neighborhoodRadius = 5
-    this.maxSpeed           = 1
+    this.maxSpeed           = 5
     this.avoidWalls         = true
     this.birds  = []
     this.scene              = scene
@@ -125,10 +125,11 @@ class Bird {
   }
 
   update(dt = 1) {
-    if ( this.boid.avoidWalls ) {
+    //if ( this.boid.avoidWalls ) {
 
       if ( this.position.x >   this.boid.width )  {
         this.position.x = - this.boid.width
+        this.position.y = Math.abs(this.position.y)
         this.body.update(this.position, this.velocity) 
         this.line.jump(this.position)
         return
@@ -179,7 +180,7 @@ class Bird {
       v = this.avoid( v );
       v.multiplyScalar( scale );
       this.acceleration.add( v );
-    }
+    //}
 
     if ( Math.random() > 0.80 ) {
       //this.flock()
@@ -197,9 +198,9 @@ class Bird {
 
     }
 
-    this.acceleration.add( this.alignment() )
+    //this.acceleration.add( this.alignment() )
     //this.acceleration.add( this.cohesion() )
-    this.acceleration.add( this.separation() )
+    //this.acceleration.add( this.separation() )
 
   };
 

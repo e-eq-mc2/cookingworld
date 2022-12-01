@@ -25,34 +25,20 @@ export class Slideshow {
     this.current = -1
 
     this.tween  = undefined
+    this.finished = false
 
-    this.smoke = new Smoke("img/smoke.png", width, height, scene)
+    this.smoke = new Smoke("img/smoke.png", width, height, scene, 8000)
 
     this.color  = {opacity: 0}
     this.syncColor()
     this.isFirstTime = true
   }
 
-  reset() {
-    this.current = -1
-    this.tween = undefined
-    this.color  = {opacity: 0}
-
-    for(let i=0; i<this.pages.length; ++i) {
-      const p = this.pages[i]
-      p.setOpacity(0)
-    }
-
-    //this.isFirstTime = true
-    this.smoke.reset()
-    this.update()
-  }
-
   createTween(color) {
     const tween = new TWEEN.Tween({opacity: 0})
     tween
-      .to({opacity: 1}, 1500)
-      .easing(TWEEN.Easing.Cubic.In)
+      .to({opacity: 1}, 8000)
+      .easing(TWEEN.Easing.Exponential.In)
 			.onUpdate((o) => { 
         color.opacity = o.opacity 
       })
@@ -60,11 +46,17 @@ export class Slideshow {
   }
 
   next() {
-    this.current = this.current + 1
+    this.previous = this.current
+    this.current  = (this.current + 1) % this.pages.length
+    console.log(this.current)
 
-    if ( this.current == this.pages.length ) {
-      this.reset()
-      return
+    for(let i=0; i<this.pages.length; ++i) {
+      const p = this.pages[i]
+      if ( i == this.current || i == this.previous )  {
+        p.startAppear()
+        continue
+      }
+      p.startFin()
     }
 
     if ( this.current == 0 && this.isFirstTime ) {
@@ -76,18 +68,36 @@ export class Slideshow {
     this.tween.start()
   }
 
+  startInit() {
+    this.previous = -1
+    this.current  = -1
+
+    this.tween = undefined
+    this.color  = {opacity: 0}
+
+    for(let i=0; i<this.pages.length; ++i) {
+      const p = this.pages[i]
+      p.startInit()
+    }
+
+    this.isFirstTime = true
+    this.finished = false
+    this.smoke.startInit()
+  }
+
+  isFinished() {
+    return false
+  }
 
   syncColor() {
-    const curr = this.current
-    const prev = curr -1
-    const currPage = this.pages[curr]
-    const prevPage = this.pages[prev]
+    const currP = this.pages[this.current ]
+    const prevP = this.pages[this.previous]
 
-    const currOpacity = this.color.opacity
-    const prevOpacity = 1 - this.color.opacity
+    const currO = this.color.opacity
+    const prevO = 1 - this.color.opacity
 
-    if ( currPage ) currPage.setOpacity(currOpacity)
-    if ( prevPage ) prevPage.setOpacity(prevOpacity)
+    if ( currP ) currP.setOpacity(currO)
+    if ( prevP ) prevP.setOpacity(prevO)
 
     //for(let i=0; i<this.pages.length; ++i) {
     //  if (i == curr) continue
@@ -102,7 +112,6 @@ export class Slideshow {
     const t = this.tween
     if ( t  && t.isPlaying() ) t.update()
 
-    console.log(this.color.opacity)
     this.syncColor()
     this.smoke.update(dt)
   }
@@ -125,11 +134,13 @@ Slideshow.Page = class {
       mesh.material.opacity = 0
       a.add( mesh )
     }
-    
     this.meshes.push( a )
-    scene.add( a )
-    a.translateY(height * 0.5)
 
+    this.ALL = this.meshes.length -1
+    //scene.add( a )
+    this.scene = scene
+
+    a.translateY(height * 0.5)
     switch(num) {
       case 1:
         this.align1(width, height)
@@ -144,6 +155,22 @@ Slideshow.Page = class {
     }
 
     this.initialPosition = a.position.clone()
+  }
+
+  startInit() {
+    this.setOpacity(0)
+    const m = this.meshes[this.ALL]
+    this.scene.remove(m)
+  }
+
+  startAppear() {
+    const m = this.meshes[this.ALL]
+    this.scene.add(m)
+  }
+
+  startFin() {
+    const m = this.meshes[this.ALL]
+    this.scene.remove(m)
   }
 
   align1(width, height) {
@@ -191,5 +218,4 @@ Slideshow.Page = class {
     });
     return mat
   }
-
 }
