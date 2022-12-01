@@ -67,12 +67,12 @@ function init() {
   window.addEventListener( 'resize', onWindowResize )
 
   stats = new Stats();
-  document.body.appendChild( stats.dom );
+  //document.body.appendChild( stats.dom );
 
   const controls = new OrbitControls( camera, renderer.domElement );
-  camera.position.z = 13
-  camera.position.y = 6.5
-  controls.target.y = 6.5
+  camera.position.z = 13.5
+  camera.position.y = 7
+  controls.target.y = 7
 
   controls.update();
 }
@@ -80,7 +80,7 @@ function init() {
 function initPerformers() {
   spotlight = new Spotlight("img/spotlight_", 8, 8, scene)
 
-  const height = 13
+  const height = 14
   tomato   = new Food("img/tomato_"   , Math.floor(height * 1024/1024), height, scene)
   broccoli = new Food("img/broccoli_" , Math.floor(height * 1250/1024), height, scene)
   //pumpkin  = new Food("img/pumpkin_"  , Math.floor(height * 1250/1024), height, scene)

@@ -10,9 +10,9 @@ export class Spotlight {
     this.RIGHT  = 2
     this.ALL    = 3
 
-    this.maxOpacity = 0.8
-    this.LeftX  = - 10
-    this.RightX =   10
+    this.maxOpacity = 0.6
+    this.LeftX  = - 13
+    this.RightX =   13
 
     const geometry = this.plateGeometry(height, width, 1, 1)
 

@@ -25,8 +25,8 @@ export class Boid {
   constructor(scene) {
 
     const num               = 0
-    this.maxNum             = 50
-    this.width              = 20
+    this.maxNum             = 80
+    this.width              = 50
     this.height             = 20
     this.depth              = 20
     this.neighborhoodRadius = 5
@@ -35,13 +35,13 @@ export class Boid {
     this.birds  = []
     this.scene              = scene
 
-    this.initPos = new THREE.Vector3(6, 5, 0)
+    this.initPos = new THREE.Vector3(9, 6, 0)
 
     for ( let i = 0; i < num; i ++ ) {
       const p = this.initPos.clone()
       const v = this.russianRoulette()
 
-      v.multiplyScalar(1)
+      v.multiplyScalar(2)
       const bird = new Bird(p, v, this, scene)
       this.birds.push(bird)
     }
@@ -475,7 +475,7 @@ Bird.Body = class {
 
 Bird.Line = class {
   constructor(pos) {
-    const lineLength = 64
+    const lineLength = 32
     const points = []
     for (let i=0; i<lineLength; ++i) {
       points.push(pos.x)
@@ -512,7 +512,7 @@ Bird.Line = class {
       opacity: 1,
       resolution: res,
       sizeAttenuation: 1,
-      lineWidth: 0.08,
+      lineWidth: 0.06,
       depthTest: false,
       blending: THREE.AdditiveBlending,
       transparent: false,

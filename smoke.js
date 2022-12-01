@@ -4,7 +4,7 @@ const TWEEN = require('@tweenjs/tween.js')
 import { Sound }  from  './sound.js'
 
 export class Smoke {
-  constructor(fname, width, height, scene, time = 2000) {
+  constructor(fname, width, height, scene, time = 8000) {
     const depth = Math.max(width, height) * 0.3
 
     const scale = 3
@@ -13,7 +13,7 @@ export class Smoke {
     const geometry = this.plateGeometry(w, h, 1, 1)
     const material = this.plateMaterial(fname)
 
-    this.ALL = 20
+    this.ALL = 15
     this.meshes = []
     const a = new THREE.Group()
     for (let i = 0; i < this.ALL; i++) {

@@ -71,7 +71,7 @@ export class Food {
   setupPhisics() {
     this.gravity    = new THREE.Vector3( 0, 0.0, 0 )
     this.velocity   = new THREE.Vector3( 0, 0.0, 0 )
-    this.energyLoss = 0.7
+    this.energyLoss = 0.8
   }
 
   isCleaned() {
@@ -144,8 +144,8 @@ export class Food {
   startDropping() {
     this.scene.add( this.meshes[this.ALL] )
 
-    this.velocity.set(0, -8.0, 0)
-    this.gravity .set(0, -0.7, 0)
+    this.velocity.set(0, -3.0, 0)
+    this.gravity .set(0, -0.3, 0)
   }
 
   startCutting() {
