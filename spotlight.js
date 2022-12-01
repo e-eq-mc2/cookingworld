@@ -132,7 +132,7 @@ export class Spotlight {
 
   startFin() {
     this.finished = true
-    this.sound.stop()
+    if ( this.sound.isPlaying ) this.sound.stop()
   }
 
   disappear() {
@@ -140,7 +140,7 @@ export class Spotlight {
       const c = this.colors[i]
       c.opacity = 0
     }
-    this.sound.stop()
+    if ( this.sound.isPlaying ) this.sound.stop()
     this.update()
   }
 

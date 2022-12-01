@@ -16,7 +16,6 @@ class MeshLineExt extends MeshLine {
     }
 
     this.process()
-    console.log(this.previous)
   }
 }
 
@@ -25,10 +24,10 @@ export class Boid {
   constructor(scene) {
 
     const num               = 0
-    this.maxNum             = 80
+    this.maxNum             = 100
     this.width              = 50
-    this.height             = 20
-    this.depth              = 20
+    this.height             = 18
+    this.depth              = 15
     this.neighborhoodRadius = 5
     this.maxSpeed           = 5
     this.avoidWalls         = true
@@ -161,7 +160,7 @@ class Bird {
       //this.acceleration.add( v );
 
 
-      v.set( this.position.x, - this.boid.height * 0.1, this.position.z );
+      v.set( this.position.x, - this.boid.height * 0.2, this.position.z );
       v = this.avoid( v );
       v.multiplyScalar( scale );
       this.acceleration.add( v );
@@ -173,8 +172,8 @@ class Bird {
       const distanceToTop = Math.abs(this.boid.height - this.position.y)
       const st = (1 / distanceToTop) * 0.1
       this.velocity.x += (this.velocity.x > 0) ? st : -st 
+      this.velocity.z += (this.velocity.z > 0) ? st : -st 
       this.acceleration.add( v )
-
 
       v.set( this.position.x, this.position.y, - this.boid.depth );
       v = this.avoid( v );
@@ -187,8 +186,8 @@ class Bird {
       this.acceleration.add( v );
     //}
 
-    if ( Math.random() > 0.80 ) {
-      //this.flock()
+    if ( Math.random() > 0.60 ) {
+      this.flock()
     }
 
     this.move(dt);
@@ -203,9 +202,9 @@ class Bird {
 
     }
 
-    //this.acceleration.add( this.alignment() )
-    //this.acceleration.add( this.cohesion() )
-    //this.acceleration.add( this.separation() )
+    this.acceleration.add( this.alignment() )
+    this.acceleration.add( this.cohesion() )
+    this.acceleration.add( this.separation() )
 
   };
 
@@ -306,18 +305,17 @@ class Bird {
     let posSum = new THREE.Vector3()
     let count = 0
 
-    for ( let i = 0, il = boids.length; i < il; i ++ ) {
+    const birds = this.boid.birds
+    for (let i = 0; i < birds.length; i++ ) {
 
       if ( Math.random() > 0.6 ) continue;
+      const bird = birds[ i ]
 
-      const boid = boids[ i ];
-      const distance = boid.position.distanceTo( this.position );
+      const distance = bird.position.distanceTo( this.position );
 
       if ( distance > 0 && distance <= this.boid.neighborhoodRadius ) {
-
-        posSum.add( boid.position );
+        posSum.add( bird.position );
         count++;
-
       }
     }
 
@@ -334,10 +332,7 @@ class Bird {
     let l = steer.length();
 
     //if ( l > this.boid.maxSteerForce ) {
-
     //  steer.divideScalar( l / this.boid.maxSteerForce );
-
-
     //}
 
     return steer;
