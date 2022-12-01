@@ -37,7 +37,7 @@ export class Slideshow {
   createTween(color) {
     const tween = new TWEEN.Tween({opacity: 0})
     tween
-      .to({opacity: 1}, 8000)
+      .to({opacity: 1}, 2000)
       .easing(TWEEN.Easing.Exponential.In)
 			.onUpdate((o) => { 
         color.opacity = o.opacity 

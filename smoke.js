@@ -13,7 +13,7 @@ export class Smoke {
     const geometry = this.plateGeometry(w, h, 1, 1)
     const material = this.plateMaterial(fname)
 
-    this.ALL = 10
+    this.ALL = 20
     this.meshes = []
     const a = new THREE.Group()
     for (let i = 0; i < this.ALL; i++) {

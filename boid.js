@@ -25,6 +25,7 @@ export class Boid {
   constructor(scene) {
 
     const num               = 0
+    this.maxNum             = 50
     this.width              = 20
     this.height             = 20
     this.depth              = 20
@@ -34,7 +35,7 @@ export class Boid {
     this.birds  = []
     this.scene              = scene
 
-    this.initPos = new THREE.Vector3(0, 0, 0)
+    this.initPos = new THREE.Vector3(6, 5, 0)
 
     for ( let i = 0; i < num; i ++ ) {
       const p = this.initPos.clone()
@@ -44,6 +45,10 @@ export class Boid {
       const bird = new Bird(p, v, this, scene)
       this.birds.push(bird)
     }
+  }
+
+  isFinished() {
+    return this.birds.length > this.maxNum
   }
 
   updateResolution() {
@@ -156,7 +161,7 @@ class Bird {
       //this.acceleration.add( v );
 
 
-      v.set( this.position.x, - this.boid.height, this.position.z );
+      v.set( this.position.x, - this.boid.height * 0.1, this.position.z );
       v = this.avoid( v );
       v.multiplyScalar( scale );
       this.acceleration.add( v );
@@ -372,9 +377,9 @@ Bird.Body = class {
     const material = this.birdMaterial()
 
     this.mesh = new THREE.Mesh(geometry , material)
-    this.mesh.scale.x = 0.1
-    this.mesh.scale.y = 0.1
-    this.mesh.scale.z = 0.1
+    this.mesh.scale.x = 0.05
+    this.mesh.scale.y = 0.05
+    this.mesh.scale.z = 0.05
 
     this.update(position, velocity)
     this.phase = Math.floor( Math.random() * 62.83 )
@@ -507,7 +512,7 @@ Bird.Line = class {
       opacity: 1,
       resolution: res,
       sizeAttenuation: 1,
-      lineWidth: 0.1,
+      lineWidth: 0.08,
       depthTest: false,
       blending: THREE.AdditiveBlending,
       transparent: false,

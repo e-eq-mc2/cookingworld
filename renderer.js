@@ -94,7 +94,7 @@ function initPerformers() {
   god        = new Kutiyose("img/god_1.png"      , Math.floor(height * 1024/1024), height, scene)
   frog       = new Kutiyose("img/frog.png"       , Math.floor(height * 1338/1024), height, scene)
 
-  slideshow = new Slideshow("img/omoide/", 4, Math.floor(height * (1478/1108)), height, scene)
+  slideshow = new Slideshow("img/omoide/", 40, Math.floor(height * (1478/1108)), height, scene)
 
   boid = new Boid(scene)
 
