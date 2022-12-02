@@ -23,7 +23,7 @@ export class Boid {
   constructor(scene) {
 
     const num               = 0
-    this.maxNum             = 300
+    this.maxNum             = 500
     this.width              = 50
     this.height             = 18
     this.depth              = 15
@@ -58,7 +58,7 @@ export class Boid {
   }
 
   isFinished() {
-    console.log(`birds: ${this.birds.length} / ${this.maxNum}`)
+    console.log(`${this.constructor.name}: ${this.birds.length} / ${this.maxNum}`)
     const f =  this.birds.length > this.maxNum 
     return f
   }

@@ -61,8 +61,7 @@ function init() {
   initPerformers()
 
   const axesHelper = new THREE.AxesHelper( 5 )
-  scene.add( axesHelper )
-
+  //scene.add( axesHelper )
 
   window.addEventListener( 'resize', onWindowResize )
 
@@ -211,7 +210,7 @@ window.console = console
 
 //looks for key presses and logs them
 document.body.addEventListener("keydown", function(e) {
-  console.log(`key: ${e.key}`);
+  //console.log(`key: ${e.key}`);
 
   switch(true) {
     case e.key == '0':

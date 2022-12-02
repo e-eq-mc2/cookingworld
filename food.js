@@ -139,6 +139,7 @@ export class Food {
   startFin() {
     this.scene.remove( this.meshes[this.ALL] )
     this.finished = true
+    console.log(`${this.constructor.name}: Finished`)
   }
 
   startDropping() {

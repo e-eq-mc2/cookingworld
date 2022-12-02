@@ -64,6 +64,12 @@ export class Slideshow {
 
     this.tween = this.createTween(this.color)
     this.tween.start()
+
+    if ( this.isFinished() ) this.startFin()
+  }
+
+  isFinished() {
+    return this.current == this.pages.length -1
   }
 
   startInit() {
@@ -83,8 +89,8 @@ export class Slideshow {
     this.smoke.startInit()
   }
 
-  isFinished() {
-    return this.current == this.pages.length -1
+  startFin() {
+    console.log(`${this.constructor.name}: Finished`)
   }
 
   move(dt = 0.03) {
@@ -107,14 +113,6 @@ export class Slideshow {
 
     if ( currP ) currP.setOpacity(currO)
     if ( prevP ) prevP.setOpacity(prevO)
-
-    //for(let i=0; i<this.pages.length; ++i) {
-    //  if (i == curr) continue
-    //  if (i == prev) continue
-
-    //  const p = this.pages[i]
-    //  p.setOpacity(0)
-    //}
   }
 
   update(dt) {

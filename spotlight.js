@@ -10,7 +10,7 @@ export class Spotlight {
     this.RIGHT  = 2
     this.ALL    = 3
 
-    this.maxOpacity = 0.6
+    this.maxOpacity = 0.5
     this.LeftX  = - 13
     this.RightX =   13
 
@@ -133,6 +133,7 @@ export class Spotlight {
   startFin() {
     this.finished = true
     if ( this.sound.isPlaying ) this.sound.stop()
+    console.log(`${this.constructor.name}: Finished`)
   }
 
   disappear() {
@@ -142,6 +143,7 @@ export class Spotlight {
     }
     if ( this.sound.isPlaying ) this.sound.stop()
     this.update()
+    console.log(`${this.constructor.name}: OFF`)
   }
 
   appear() {
@@ -151,6 +153,7 @@ export class Spotlight {
       c.opacity = 1
     }
     this.update()
+    console.log(`${this.constructor.name}: ON`)
   }
 
   startTweenIn(i) {

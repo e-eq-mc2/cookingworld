@@ -98,6 +98,7 @@ export class Kutiyose {
     this.scene.remove(this.mesh)
     this.smoke.startFin()
     this.finished = true
+    console.log(`${this.constructor.name}: Finished`)
   }
 
   startAppear() {
