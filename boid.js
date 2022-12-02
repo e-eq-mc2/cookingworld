@@ -19,18 +19,16 @@ class MeshLineExt extends MeshLine {
   }
 }
 
-
 export class Boid {
   constructor(scene) {
 
     const num               = 0
-    this.maxNum             = 100
+    this.maxNum             = 300
     this.width              = 50
     this.height             = 18
     this.depth              = 15
     this.neighborhoodRadius = 5
     this.maxSpeed           = 5
-    this.avoidWalls         = true
     this.birds  = []
     this.scene              = scene
 
@@ -46,8 +44,23 @@ export class Boid {
     }
   }
 
+  startInit() {
+    const birds = this.birds
+    for ( let i = 0; i < birds.length; i ++ ) {
+      const bird = birds[i]
+      bird.startInit()
+    }
+    this.birds = []
+  }
+
+  startFin() {
+    this.startInit()
+  }
+
   isFinished() {
-    return this.birds.length > this.maxNum
+    console.log(`birds: ${this.birds.length} / ${this.maxNum}`)
+    const f =  this.birds.length > this.maxNum 
+    return f
   }
 
   updateResolution() {
@@ -105,11 +118,20 @@ class Bird {
     
     this.initBody(scene)
     this.initLine(scene)
+    this.scene = scene
 
     const color = new THREE.Color( Math.random() * 0xffffff )
     this.body.setColor(color)
     this.line.setColor(color)
 
+  }
+
+  startInit() {
+    this.scene.remove(this.body.mesh) 
+    this.scene.remove(this.line.mesh) 
+
+    this.body.dispose()
+    this.line.dispose()
   }
 
   initBody (scene) {
@@ -129,62 +151,58 @@ class Bird {
   }
 
   update(dt = 1) {
-    //if ( this.boid.avoidWalls ) {
+    if ( this.position.x >   this.boid.width )  {
+      this.position.x = - this.boid.width
+      this.position.y = Math.abs(this.position.y)
+      this.body.update(this.position, this.velocity) 
+      this.line.jump(this.position)
+      return
+    }
 
-      if ( this.position.x >   this.boid.width )  {
-        this.position.x = - this.boid.width
-        this.position.y = Math.abs(this.position.y)
-        this.body.update(this.position, this.velocity) 
-        this.line.jump(this.position)
-        return
-      }
+    if ( this.position.x < - this.boid.width ) {
+      this.position.x = this.boid.width
+      this.body.update(this.position, this.velocity) 
+      this.line.jump(this.position)
+      return
+    }
 
-      if ( this.position.x < - this.boid.width ) {
-        this.position.x = this.boid.width
-        this.body.update(this.position, this.velocity) 
-        this.line.jump(this.position)
-        return
-      }
+    const scale = 5
 
-      const scale = 5
+    let v = new THREE.Vector3()
+    //v.set( - this.boid.width, this.position.y, this.position.z );
+    //v = this.avoid( v );
+    //v.multiplyScalar( scale );
+    //this.acceleration.add( v );
 
-      let v = new THREE.Vector3()
-      //v.set( - this.boid.width, this.position.y, this.position.z );
-      //v = this.avoid( v );
-      //v.multiplyScalar( scale );
-      //this.acceleration.add( v );
+    //v.set( this.boid.width, this.position.y, this.position.z );
+    //v = this.avoid( v );
+    //v.multiplyScalar( scale );
+    //this.acceleration.add( v );
 
-      //v.set( this.boid.width, this.position.y, this.position.z );
-      //v = this.avoid( v );
-      //v.multiplyScalar( scale );
-      //this.acceleration.add( v );
+    v.set( this.position.x, - this.boid.height * 0.1, this.position.z );
+    v = this.avoid( v );
+    v.multiplyScalar( scale );
+    this.acceleration.add( v );
 
+    v.set( this.position.x, this.boid.height, this.position.z );
+    v = this.avoid( v );
+    v.multiplyScalar( scale );
 
-      v.set( this.position.x, - this.boid.height * 0.2, this.position.z );
-      v = this.avoid( v );
-      v.multiplyScalar( scale );
-      this.acceleration.add( v );
+    const distanceToTop = Math.abs(this.boid.height - this.position.y)
+    const st = (1 / distanceToTop) * 0.1
+    this.velocity.x += (this.velocity.x > 0) ? st : -st 
+    this.velocity.z += (this.velocity.z > 0) ? st : -st 
+    this.acceleration.add( v )
 
-      v.set( this.position.x, this.boid.height, this.position.z );
-      v = this.avoid( v );
-      v.multiplyScalar( scale );
+    v.set( this.position.x, this.position.y, - this.boid.depth );
+    v = this.avoid( v );
+    v.multiplyScalar( scale );
+    this.acceleration.add( v );
 
-      const distanceToTop = Math.abs(this.boid.height - this.position.y)
-      const st = (1 / distanceToTop) * 0.1
-      this.velocity.x += (this.velocity.x > 0) ? st : -st 
-      this.velocity.z += (this.velocity.z > 0) ? st : -st 
-      this.acceleration.add( v )
-
-      v.set( this.position.x, this.position.y, - this.boid.depth );
-      v = this.avoid( v );
-      v.multiplyScalar( scale );
-      this.acceleration.add( v );
-
-      v.set( this.position.x, this.position.y, this.boid.depth );
-      v = this.avoid( v );
-      v.multiplyScalar( scale );
-      this.acceleration.add( v );
-    //}
+    v.set( this.position.x, this.position.y, this.boid.depth );
+    v = this.avoid( v );
+    v.multiplyScalar( scale );
+    this.acceleration.add( v );
 
     if ( Math.random() > 0.60 ) {
       this.flock()
@@ -380,6 +398,11 @@ Bird.Body = class {
     this.phase = Math.floor( Math.random() * 62.83 )
   }
 
+  dispose() {
+    this.mesh.geometry.dispose()
+    this.mesh.material.dispose()
+  }
+
   birdGeometry() {
     const geometry = new THREE.BufferGeometry();
 
@@ -483,6 +506,11 @@ Bird.Line = class {
     this.meshLine.setPoints(points, p => { return p } ) // makes width taper (p is a decimal percentage of the number of points)
 
     this.initMesh()
+  }
+
+  dispose() {
+    this.mesh.geometry.dispose()
+    this.mesh.material.dispose()
   }
 
   initMesh() {

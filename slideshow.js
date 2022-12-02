@@ -3,7 +3,6 @@ const Common = require("./lib/common.js")
 const TWEEN = require('@tweenjs/tween.js')
 import { Smoke }  from  './smoke.js'
 
-
 export class Slideshow {
   constructor(fnamePrefix, num, width, height, scene) {
 
@@ -48,7 +47,6 @@ export class Slideshow {
   next() {
     this.previous = this.current
     this.current  = (this.current + 1) % this.pages.length
-    console.log(this.current)
 
     for(let i=0; i<this.pages.length; ++i) {
       const p = this.pages[i]
@@ -86,7 +84,18 @@ export class Slideshow {
   }
 
   isFinished() {
-    return false
+    return this.current == this.pages.length -1
+  }
+
+  move(dt = 0.03) {
+    const currP = this.pages[this.current ]
+    const prevP = this.pages[this.previous]
+
+    const vx = - 0.1
+    const dx = vx * dt 
+
+    if ( currP ) currP.moveX(dx)
+    if ( prevP ) prevP.moveX(dx)
   }
 
   syncColor() {
@@ -113,6 +122,7 @@ export class Slideshow {
     if ( t  && t.isPlaying() ) t.update()
 
     this.syncColor()
+    this.move()
     this.smoke.update(dt)
   }
 
@@ -154,12 +164,13 @@ Slideshow.Page = class {
         break
     }
 
-    this.initialPosition = a.position.clone()
+    this.startPos = a.position.clone()
   }
 
   startInit() {
     this.setOpacity(0)
     const m = this.meshes[this.ALL]
+    m.position.copy(this.startPos)
     this.scene.remove(m)
   }
 
@@ -170,6 +181,7 @@ Slideshow.Page = class {
 
   startFin() {
     const m = this.meshes[this.ALL]
+    m.position.copy(this.startPos)
     this.scene.remove(m)
   }
 
@@ -199,6 +211,11 @@ Slideshow.Page = class {
       const m = this.meshes[i]
       m.material.opacity = o
    }
+  }
+
+  moveX(dx) {
+    const m = this.meshes[this.ALL]
+    m.position.x += dx
   }
 
   plateGeometry(w, h, wsegs, hsegs) {

@@ -181,6 +181,34 @@ function render() {
   stats.update()
 }
 
+// define a new console
+var console=(function(oldCons){
+    return {
+			log: function(text){
+					oldCons.log(text);
+					window.api.send(text, 'log::to_main')
+				// Your code
+        },
+        info: function (text) {
+            oldCons.info(text);
+            // Your code
+        },
+        warn: function (text) {
+            oldCons.warn(text);
+            // Your code
+        },
+        error: function (text) {
+            oldCons.error(text);
+            // Your code
+        }
+    };
+}(window.console))
+
+//Then redefine the old console
+window.console = console
+
+
+
 //looks for key presses and logs them
 document.body.addEventListener("keydown", function(e) {
   console.log(`key: ${e.key}`);

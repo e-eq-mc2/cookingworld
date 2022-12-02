@@ -5,7 +5,6 @@
 const {app, BrowserWindow, Menu, ipcMain, globalShortcut} = require('electron')
 
 const path = require('path')
-const Music = require('./music.js')
 
 function isWindows() { return process.platform == 'win32' }
 function isMac() { return process.platform == 'darwin' }
@@ -38,8 +37,6 @@ function createWindow () {
   return mainWindow
 }
 
-const music = new Music()
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -68,6 +65,11 @@ app.whenReady().then(() => {
     // 1x 1920x1080 
     win.setSize(1920, 1080)
   })
+
+	ipcMain.on('log::to_main', (event, rcv) => { 
+    console.log(rcv)
+	})
+
 })
 
 app.on('before-quit', function (e) {
