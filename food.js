@@ -139,7 +139,7 @@ export class Food {
   startFin() {
     this.scene.remove( this.meshes[this.ALL] )
     this.finished = true
-    console.log(`${this.constructor.name}: Finished`)
+    console.log(`${this.constructor.name}: Finished --------`)
   }
 
   startDropping() {
@@ -281,14 +281,14 @@ export class Food {
   updateExit1(dt) {
     const vx = 1.0
     const dx = vx * dt
-    const v = 1 / 180 * Math.PI
+    const v = (0.5 / 180) * Math.PI
     this.moveXwithVibration(dx, v)
   }
 
   updateExit2(dt) {
     const vx = 1.0
     const dx = vx * dt
-    const v = 2 / 180 * Math.PI
+    const v = (1 / 180) * Math.PI
     this.moveXwithVibration(dx, v)
   }
 

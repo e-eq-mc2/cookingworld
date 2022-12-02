@@ -48,6 +48,7 @@ export class Slideshow {
     this.previous = this.current
     this.current  = (this.current + 1) % this.pages.length
 
+
     for(let i=0; i<this.pages.length; ++i) {
       const p = this.pages[i]
       if ( i == this.current || i == this.previous )  {
@@ -65,6 +66,7 @@ export class Slideshow {
     this.tween = this.createTween(this.color)
     this.tween.start()
 
+    console.log(`${this.constructor.name}: ${this.current} / ${this.pages.length}`)
     if ( this.isFinished() ) this.startFin()
   }
 
@@ -90,7 +92,7 @@ export class Slideshow {
   }
 
   startFin() {
-    console.log(`${this.constructor.name}: Finished`)
+    console.log(`${this.constructor.name}: Finished --------`)
   }
 
   move(dt = 0.03) {

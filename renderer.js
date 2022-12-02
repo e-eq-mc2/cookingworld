@@ -212,6 +212,7 @@ window.console = console
 //looks for key presses and logs them
 document.body.addEventListener("keydown", function(e) {
   //console.log(`key: ${e.key}`);
+  console.log(`currentPerformer: ### ${currentPerformer} ###`);
 
   switch(true) {
     case e.key == '0':

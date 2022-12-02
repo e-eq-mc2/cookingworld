@@ -133,7 +133,7 @@ export class Spotlight {
   startFin() {
     this.finished = true
     if ( this.sound.isPlaying ) this.sound.stop()
-    console.log(`${this.constructor.name}: Finished`)
+    console.log(`${this.constructor.name}: Finished --------`)
   }
 
   disappear() {

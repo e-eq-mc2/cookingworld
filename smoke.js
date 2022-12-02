@@ -63,8 +63,8 @@ export class Smoke {
       .to({opacity: [1, 1, 0.9, 0.8, 0.4, 0.3, 0.2, 0.1, 0]}, this.time)
       .easing(TWEEN.Easing.Linear.None)
       .onUpdate( o => { color.opacity = o.opacity })
-      .onStart( o => { console.log("smoke started"); scene.add(mesh) })
-      .onComplete( o => { console.log("smoke completed"); scene.remove(mesh) })
+      .onStart( o => { scene.add(mesh) })
+      .onComplete( o => { scene.remove(mesh) })
   }
 
   appear() {

@@ -58,7 +58,6 @@ export class Boid {
   }
 
   isFinished() {
-    console.log(`${this.constructor.name}: ${this.birds.length} / ${this.maxNum}`)
     const f =  this.birds.length > this.maxNum 
     return f
   }
@@ -85,6 +84,7 @@ export class Boid {
       const bird = new Bird(p, v, this, this.scene)
       this.birds.push(bird)
     }
+    console.log(`${this.constructor.name}: ${this.birds.length} / ${this.maxNum}`)
   }
 
   russianRoulette() {
