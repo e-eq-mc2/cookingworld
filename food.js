@@ -25,7 +25,7 @@ export class Food {
       const mesh = new THREE.Mesh(geometry, material)
       this.meshes.push( mesh ) 
       mesh.translateY(height / 2.0)
-      mesh.translateZ( i * - 0.3   )
+      mesh.translateZ( i * - 0.2   )
     }
 
     const b = new THREE.Group()
@@ -255,10 +255,20 @@ export class Food {
   }
 
   updateExit(dt) {
-    if ( this.exitType == 0 ) {
-      this.updateExit0( dt ) 
-    } else {
-      this.updateExit1( dt ) 
+    switch( thi.exitType ) {
+      case 0 :
+        this.updateExit0( dt ) 
+        break
+      case 1 :
+        this.updateExit1( dt ) 
+        break
+      case 2 :
+        this.updateExit2( dt ) 
+        break
+      default :
+        this.updateExit0( dt ) 
+        break
+
     }
   }
 
@@ -269,9 +279,17 @@ export class Food {
   }
 
   updateExit1(dt) {
-    const vx = 1
+    const vx = 0.7
     const dx = vx * dt
-    this.moveX( dx )
+    const v = 2 / 180 * Math.PI
+    this.moveXwithVibrationL( dx )
+  }
+
+  updateExit2(dt) {
+    const vx = 0.7
+    const dx = vx * dt
+    const v = 1 / 180 * Math.PI
+    this.moveXwithVibrationS( dx )
   }
 
   moveLeft(dx = -0.08) {
@@ -282,8 +300,7 @@ export class Food {
     this.moveX(dx)
   }
 
-  moveX(dx) {
-    const maxRotate = 1 / 180   * Math.PI
+  moveXwithVibration(dx, maxRotate = 0.02) {
     const m   = this.meshes[this.AFTER]
     const pos = m.position
     const rot = m.rotation

@@ -13,7 +13,7 @@ let renderer, scene, camera, stats
 let mouseX = 0
 let mouseY = 0
 
-let tomato, broccoli
+let tomato, broccoli, pumpkin
 let snail, butterfly0, butterfly1, frog, god
 let slideshow
 
@@ -82,10 +82,11 @@ function initPerformers() {
   const height = 14
   tomato   = new Food("img/tomato_"   , Math.floor(height * 1024/1024), height, scene)
   broccoli = new Food("img/broccoli_" , Math.floor(height * 1250/1024), height, scene)
-  //pumpkin  = new Food("img/pumpkin_"  , Math.floor(height * 1250/1024), height, scene)
+  pumpkin  = new Food("img/pumpkin_"  , Math.floor(height * 1530/1024), height, scene)
 
+  tomato.exitType   = 0
   broccoli.exitType = 1
-  //pumpkin.exitType = 1
+  pumpkin.exitType  = 2
 
   snail      = new Kutiyose("img/snail.png"      , Math.floor(12     * 2020/1024),     12, scene)
   butterfly0 = new Kutiyose("img/butterfly_0.png", Math.floor(height * 1024/1024), height, scene)
@@ -101,7 +102,7 @@ function initPerformers() {
   performers.push(spotlight)  // 0
   performers.push(tomato )    // 1
   performers.push(broccoli)   // 2
-  //performers.push(pumpkin)    // 3
+  performers.push(pumpkin)    // 3
   performers.push(snail)      // 4
   performers.push(butterfly0) // 5 
   performers.push(butterfly1) // 6
@@ -254,6 +255,11 @@ document.body.addEventListener("keydown", function(e) {
       currentPerformer = 9
       break
 
+    case e.key == 'a':
+      activeObj().startInit()
+      currentPerformer = 9
+      break
+
     case e.key == 'l':
       spotlight.appear()
       break
@@ -261,14 +267,6 @@ document.body.addEventListener("keydown", function(e) {
     case e.key == 'L':
       spotlight.disappear()
       break
-
-    case e.key == 'Enter':
-      //{
-      //  if ( activeObj().isCleaned() ) {
-      //    currentPerformer = Math.min(currentPerformer + 1, performers.length -1)
-      //  }
-      //  break
-      //}
 
     case e.key == 'b':
       currentPerformer = Math.max(currentPerformer - 1, 0)
